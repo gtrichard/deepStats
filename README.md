@@ -1,7 +1,7 @@
-.. image:: ./docs/images/deepStats_logo.svg
+deepStats
+=========
 
-deepStats:
-==========
+![Alt text](docs/images/deepStats_logo.png?raw=true "Title")
 
 A stastitical toolbox and beyond for deeptools and genomic signals.
 
