@@ -1,0 +1,753 @@
+#!/usr/bin/env Rscript
+
+suppressMessages( library( 'optparse' ) )
+suppressMessages( library( 'boot' ) )
+suppressMessages( library( 'ggplot2' ) )
+suppressMessages( library( 'cowplot' ) )
+suppressMessages( library( 'showtext' ) )
+suppressMessages( library( 'tidyverse' ) )
+suppressMessages( library( 'dichromat' ) )
+suppressMessages( library( 'purrr' ) )
+
+options( show.error.locations = TRUE )
+
+
+#### ARGUMENTS ####
+
+option_list = list( 
+  
+  make_option( c( "-i","--input" ), type="character", default=NULL, 
+               help="DeepTools file obtained from computeMatrix --outFileNameMatrix. 
+               Alternatively, a .boots file from previous compareCurves runs can be provided
+               for replotting purposes and to avoid the bootstraps computation once more.", metavar="character" ),
+  
+  make_option( c( "--output", "-o" ), type="character", default=NULL, 
+               help="Output prefix. Three files will be generated, a .pdf file containing the plot
+               and a .boots file containing the bootsraps information ( RDS file ). If a .boots file 
+               is provided as input, only the plot will be produced as pdf.", metavar="character" ),
+  
+  make_option( c( "--comparison", "-c" ), type="character", default=NULL, 
+               help="When specifying 'regions' or 'scores', force a given comparison. The correct comparison to 
+               perform is otherwise automatically detected.", metavar="character" ),
+  
+  make_option( c( "--scoreLabel" ), type="integer", default=NULL, 
+               help="Names of the scores.", metavar="integer" ),
+  
+  make_option( c( "--regionLabel" ), type="integer", default=NULL, 
+               help="Names of the regions.", metavar="integer" ),
+  
+  make_option( c( "--bootstraps", "-b" ), type="integer", default=1000, 
+               help="Number of bootstraps to perform. Default: 1000.", metavar="integer" ),
+  
+  make_option( c( "--predictionsNumber", "-m" ), type="integer", default=NULL, 
+               help="Number of regions randomly drawn at each bootstrap ( predictions ). 
+               For more information please see: 
+               https://www.rdocumentation.org/packages/boot/versions/1.3-20/topics/boot", metavar="integer" ),
+  
+  make_option( c( "--bootstrapsCI" ), type="numeric", default=0.95, 
+               help="Confidence intervals ( CI ) threshold in percent. Default: 0.95.", metavar="numeric" ),
+  
+  make_option( c( "--CPU", "-p" ), type="integer", default=4, 
+               help="Number of CPU to use. Default: 4.", metavar="integer" ),
+  
+  make_option( c( "--wilcoxStartBin" ), type="numeric", default=NULL, 
+               help="The start bin number used to restrict the corrected 
+               wilcoxon test to a given portion of the plot. An integer must be provided.
+               Default: first bin.", metavar="numeric" ),
+  
+  make_option( c( "--wilcoxEndBin" ), type="numeric", default=NULL,
+               help="The end bin number used to restrict the corrected 
+               wilcoxon test to a given portion of the plot. An integer must be provided.
+               Default: last bin.", metavar="numeric" ),
+  
+  make_option( c( "--wilcoxThreshold" ), type="numeric", default=0.05,
+               help="Threshold used to define significant bins on the Wilcoxon rank-sum
+               test plot. Default: 0.05", metavar="numeric" ),
+  
+  make_option( c( "--signalName" ), type="character", default="Genomic signal", 
+               help="Name given to the signal, for instance 'H3K4me3 log2input'.
+               Default: 'Genomic signal'", metavar="character" ),
+  
+  make_option( c( "--regionName" ), type="character", default=NULL, 
+               help="Name given to the regions, for instance 'down-regulated genes'.
+               Default: None", metavar="character" ),
+  
+  make_option( c( "--firstRegionName" ), type="character", default="TSS", 
+               help="Name of the central or left region. Default: TSS", metavar="character" ),
+  
+  make_option( c( "--secondRegionName" ), type="character", default="TES", 
+               help="Name of the right region, only used when deeptools computeMatrix 
+               ran in scaled-regions mode. Default: TES", metavar="character" ),
+  
+  make_option( c( "--bootPlotColors" ), type="character", default=NULL, 
+               help="Change the bootstraps plot color palette to a user-provided one. The file must
+               be tab-delimited and contain for each line two HTML color codes ( #3366CC   #769EF2 ). 
+               The first column corresponds to the mean color, the second column corresponds to the
+               color of the bootstrap confidence interval shadowed area. The default color scale 
+               contains 6 colors that are color blind friendly using the dichromat R package.", metavar="character" ),
+  
+  make_option( c( "--bootPlotWidth" ), type="numeric", default=5.2, 
+               help="How large the bootstraps plot should be. Default: 3.7", metavar="numeric" ),
+  
+  make_option( c( "--bootPlotHeight" ), type="numeric", default=3.7, 
+               help="How tall the bootstraps plot should be. Default: 3.7", metavar="numeric" ),
+  
+  make_option( c( "--wilcoxPlotWidth" ), type="numeric", default=4.6, 
+               help="How large the Wilcoxon rank-sum test plot should be. Default: 4.6", metavar="numeric" ),
+  
+  make_option( c( "--wilcoxPlotHeight" ), type="numeric", default=4.6, 
+               help="How tall the Wilcoxon rank-sum test  plot should be. Default: 4.6", metavar="numeric" ),
+  
+  make_option( c( "--font" ), type="character", default=NULL, 
+               help="Font used for plotting, given a TTF file. Default is usually Helvetica.", metavar="character" )
+               );
+
+opt_parser = OptionParser( description= "
+                           This tool assesses if multiple genomics signals ( ChIP-seq, ATAC-seq... ) are significantly different or 
+                           not between conditions ( control, KO1, KO2, etc ). DeepStats compareCurves uses bootstraps and corrected 
+                           Wilcoxon Rank-sum tests to do so. The input of this tool corresponds to the output of deepTools 
+                           `computeMatrix --outFileNameMatrix`. If multiple region sets have been used in deepTools, one plot and 
+                           tab-delimited table will be produced for each set of regions.", 
+                           usage = "compareCurves --input file.txt --output results", option_list=option_list );
+opt = parse_args( opt_parser );
+
+
+
+
+
+if ( is.null( opt$input ) ) {
+  print_help( opt_parser )
+  stop( "An input file must be supplied", call.=FALSE )
+}
+
+if ( is.null( opt$output ) ) {
+  print_help( opt_parser )
+  stop( "An output prefix must be supplied", call.=FALSE )
+}
+
+substrRight <- function( x, n ) {
+  substr( x, nchar( x )-n+1, nchar( x ) )
+}
+
+if ( substrRight( opt$input,6 ) == ".boots"  ) {
+  mode="boots"
+  cat( as.character( Sys.time() ),".boots file provided as input, skipping statistical analysis.\n" )
+}else{mode="deeptools"}
+
+#### SET WORKING DIR AND ABSOLUTE PATHS ####
+
+opt$input <- normalizePath( opt$input )
+opt$output <- paste( normalizePath( dirname( opt$output ) ),"/",basename( opt$output ),sep="" )
+setwd( normalizePath( dirname( opt$output ) ) )
+
+
+#### METADATA EXTRACTION ####
+
+if ( mode == "deeptools" ) {
+  master_list <- list()
+  metadata <- list()
+  
+  cat( as.character( Sys.time() ),"Extracting metadata from file:\n   ", opt$input )
+  
+  #---
+  
+  regions_data <- readLines( opt$input,n = 1 )
+  regions_data <-strsplit( x = regions_data,split = "\t" )
+  regions_data<-lapply( regions_data,function( x ) strsplit( x,split=":" ) )
+  regions_data[[1]][[1]][1] <- gsub( pattern = "#",replacement = "", x = regions_data[[1]][[1]][1] )
+  
+  even_indexes<-seq( 2,length( regions_data[[1]] )*2,2 )
+  odd_indexes<-seq( 1,length( regions_data[[1]] )*2,2 )
+  
+  group_names<-as.character( as.data.frame( unlist( regions_data[[1]] ) )[odd_indexes,] )
+  group_length<-as.numeric( as.character( as.data.frame( unlist( regions_data[[1]] ) )[even_indexes,] ) )
+  
+  metadata[[1]]<-group_names
+  metadata[[2]]<-group_length
+  
+  #---
+  
+  xaxis_data <- readLines( opt$input,n = 2 )[2]
+  xaxis_data <-strsplit( x = xaxis_data,split = "\t" )
+  xaxis_data <-lapply( xaxis_data,function( x ) strsplit( x,split=":" ) )
+  xaxis_data[[1]][[1]][1] <- gsub( pattern = "#",replacement = "", x = xaxis_data[[1]][[1]][1] )
+  
+  even_indexes<-seq( 2,length( xaxis_data[[1]] )*2,2 )
+  odd_indexes<-seq( 1,length( xaxis_data[[1]] )*2,2 )
+  
+  xaxis_names  <- as.character( as.data.frame( unlist( xaxis_data[[1]] ) )[odd_indexes,] )
+  xaxis_values <- as.numeric( as.character( as.data.frame( unlist( xaxis_data[[1]] ) )[even_indexes,] ) )
+  
+  metadata[[3]]<-xaxis_names
+  metadata[[4]]<-xaxis_values
+  
+  #---
+  
+  score_data <- readLines( opt$input,n = 3 )[3]
+  score_data <- unlist( strsplit( score_data,'\t' ) )
+  score_data<-score_data[-grep( pattern =":",x = score_data )]
+  metadata[["scores"]]<-unique( score_data )
+  
+  names( metadata )<-c( "group_names","group_length","xaxis_names","xaxis_values","scores" )
+  
+  cat( " ... Done!\n" )
+}
+
+#### SETUP INPUT FILES IN CASE A BOOTS FILE IS PROVIDED ####
+
+if ( mode == "boots" ) {
+  cat( as.character( Sys.time() ),"Extracting data from file:\n   ", opt$input )
+  master_list <- readRDS( file=opt$input )
+  metadata <- master_list$metadata
+  master_list$metadata <- NULL
+  cat( " ... Done!\n" )
+}
+
+### CHANGE LABELS IF NEEDED
+
+if ( is.null(opt$scoreLabel)==FALSE ) {
+  metadata$scores <- unlist(str_split(opt$scoreLabel,";"))
+} 
+
+if ( is.null(opt$regionLabel)==FALSE ) {
+  metadata$group_names <- unlist(str_split(opt$regionLabel,";"))
+} 
+
+#### GLOBAL FLAG DETERMINATION FOR COMPARISON ####
+
+if(is.null(opt$comparison)){
+  
+  if( length( metadata$scores )>1 & length( metadata$group_names )==1 ) {
+    cat( as.character( Sys.time() ),"Multiple scores detected but only one set of region found: comparing scores.\n" )
+    global_flag="compare_scores"
+  }
+  
+  if( length( metadata$scores )==1 & length( metadata$group_names )>1 ) {
+    cat( as.character( Sys.time() ),"Multiple set of regions detected but only one score found: comparing regions.\n" )
+    global_flag="compare_regions"
+  }
+  
+  if( length( metadata$scores )>1 & length( metadata$group_names )>1 ) {
+    cat( as.character( Sys.time() ),"Multiple scores and set of regions detected: comparing regions per score.\n" )
+    global_flag="compare_scores"
+  }
+  
+}else{
+  if(opt$comparison=="score" || opt$comparison=="scores" || opt$comparison=="Score" || opt$comparison=="Scores"){
+    cat( as.character( Sys.time() ),"--comparison is set: comparing scores.\n" )
+    global_flag="compare_scores"
+  }
+  
+  if(opt$comparison=="region" || opt$comparison=="regions" || opt$comparison=="Region" || opt$comparison=="Regions"){
+    cat( as.character( Sys.time() ),"--comparison is set: comparing regions.\n" )
+    global_flag="compare_regions"
+  }
+}
+
+#### BOOSTRAPPING ####
+
+if ( mode=="deeptools" ) {
+  
+  bootstraps_to_plot<-list()
+  
+  dat <- read.table( file=opt$input, header=F, sep=( "\t" ),skip=3 ) #loading the input file content
+  nbbin  <- as.numeric(  ncol( dat  ) / length(  metadata$scores  )  ) # number of bins to analyze ( a bin = a column in the file )
+  scores_length <- rep( x=nbbin,times=length( metadata$scores ) )
+  line_index_end <- c( cumsum( metadata$group_length ) )
+  line_index_start <- c( 1,cumsum( metadata$group_length )+1 )
+  col_index_end <- c( cumsum( scores_length ) )
+  col_index_start <- c( 1,cumsum( scores_length )+1 )
+  
+  cat(  as.character( Sys.time() ), "Boostraps starting with", opt$CPU,"cores, for each group:\n" )
+  cat( "   Number of bootstraps to perform =", opt$bootstraps,"\n" )
+  cat( "   Number of bins to analyze =", nbbin,"\n" )
+  
+  for( score in 1:length( metadata$scores ) ) {
+    
+    bootstrap_dfs<-list()
+    
+    for ( group in 1:length( metadata$group_names ) ) {
+      
+      cat(  as.character( Sys.time() ), "Starting to boostrap values for the following group:\n" )
+      cat( "   Genomic score used:",metadata$scores[[score]],"\n" )
+      
+      dat_group    <- dat[line_index_start[group]:line_index_end[group],]
+      dat_group    <- dat_group[,col_index_start[score]:col_index_end[score]]
+      nbgene <- as.numeric( nrow( dat_group ) ) # number of genes/regions in the dataset
+      label  <- metadata$group_names[[group]]
+      output.name <- opt$output
+      
+      cat( "   Region set used:",label,"\n" )
+      cat( "   Number of regions to analyze:", nbgene )
+      
+      sample.colmeans <- function( x, d ) {
+        return( apply( x[d,], 2, mean, na.rm=T ) )
+      }
+      
+      b = boot( dat_group, sample.colmeans, R=opt$bootstraps, ncpus=opt$CPU, parallel = "multicore" )
+      
+      mini <- vector( length = nbbin )
+      maxi <- vector( length = nbbin )
+      
+      ci_min <- ( 1-opt$bootstrapsCI )/2
+      ci_max <- opt$bootstrapsCI+ci_min
+      
+      for ( i in 1:nbbin ) {
+        mini[i] <- quantile( b$t[,i], ci_min, na.rm=T )           # get CI
+        maxi[i] <- quantile( b$t[,i], ci_max, na.rm=T )
+      }
+      
+      cat( "... Done!\n" )
+      
+      region_name<-rep( x=label,nbbin )
+      score_name<-rep( x=metadata$scores[[score]],nbbin )
+      bin<-seq( from=1, to=nbbin, by=1 )
+      
+      
+      bootstraps_to_plot<-cbind( region_name,score_name,bin,b$t0,mini,maxi )
+      bootstraps_to_plot<-as.data.frame( unname( bootstraps_to_plot ) )
+      colnames( bootstraps_to_plot )<-c("Region","Score","Bin","Mean","Min","Max" )
+      
+      for ( column in 3:ncol( bootstraps_to_plot ) ) {
+        bootstraps_to_plot[,column]<-as.numeric( as.character( bootstraps_to_plot[,column] ) )
+      }
+      
+      bootstrap_dfs[[group]] <- bootstraps_to_plot
+    }
+    names( bootstrap_dfs )<- metadata$group_names
+    
+    #bootstraps_to_plot <- do.call( rbind,bootstrap_dfs )
+    
+    master_list[[metadata$scores[score]]] <- list()
+    master_list[[score]][["bootstraps"]] <- bootstrap_dfs
+  }
+}
+
+
+
+#### WILCOXON TESTS CORRECTED ####
+
+global_flag="compare_regions"
+
+if ( mode=="deeptools" ) {
+  
+  if ( is.null( opt$wilcoxStartBin )==TRUE && is.null( opt$wilcoxEndBin )==FALSE ) {
+    print_help( opt_parser )
+    stop( "Both --wilcoxStartBin and --wilcoxEndBin must be given.", call.=FALSE )
+  }
+  
+  if ( is.null( opt$wilcoxStartBin )==FALSE && is.null( opt$wilcoxEndBin )==TRUE ) {
+    print_help( opt_parser )
+    stop( "Both --wilcoxStartBin and --wilcoxEndBin must be given.", call.=FALSE )
+  }
+  
+  if ( is.null( opt$wilcoxStartBin )==FALSE && is.null( opt$wilcoxEndBin )==FALSE ) {
+    if ( opt$wilcoxStartBin > opt$wilcoxEndBin ) {
+      print_help( opt_parser )
+      stop( "--wilcoxStartBin must be superior to --wilcoxEndBin.", call.=FALSE )
+    }
+    if ( opt$wilcoxStartBin > opt$wilcoxEndBin ) {
+      cat( as.character( Sys.time() ), "Starting Wilcoxon rank-sum test on the following bins: from",opt$wilcoxStartBin, 
+           "to",opt$wilcoxEndBin, "\n" )
+      wilcox_df <- dat[,opt$wilcoxStartBin:opt$wilcoxEndBin]
+      #wilcox_dfs <- lapply( bootstrap_dfs, function( x ) {x[which( x$Bin >= opt$wilcoxStartBin & x$Bin <= opt$wilcoxEndBin  ),]} )
+    }
+  }else{
+    cat( as.character( Sys.time() ), "Starting Wilcoxon rank-sum test.\n" )
+    wilcox_df <- dat
+  }
+  
+  if (global_flag=="compare_regions") {
+    
+    for( score in 1:length( metadata$scores ) ) {
+      
+      wilcox_groups_indexes <- paste( line_index_start[1:length( line_index_start )-1],line_index_end,sep=":" )
+      wilcox_comparisons <- as.data.frame( expand.grid( wilcox_groups_indexes,wilcox_groups_indexes ) )
+      
+      wilcox_score_indexes <- paste( col_index_start[1:length( col_index_start )-1],col_index_end,sep=":" ) #this is type dependent
+      
+      wilcox_matrix <- matrix( nrow = length( wilcox_groups_indexes ), ncol = length( wilcox_groups_indexes ) )
+      row.names( wilcox_matrix )<-wilcox_groups_indexes
+      colnames( wilcox_matrix )<-wilcox_groups_indexes
+      
+      wilcox_padj_vectors <- list()
+      
+      for ( comps in ( 1:nrow( wilcox_comparisons ) ) ) {
+        
+        group_1_name  <- as.character( wilcox_comparisons[comps,1] )
+        group_2_name  <- as.character( wilcox_comparisons[comps,2] )
+        
+        group_1_index <- unlist( strsplit( group_1_name,split = ":" ) )
+        group_2_index <- unlist( strsplit( group_2_name,split = ":" ) )
+        
+        score_index <- unlist( strsplit( as.character(wilcox_score_indexes[score]),split = ":" ) )
+        
+        group_1_data  <- wilcox_df[group_1_index[1]:group_1_index[2],score_index[1]:score_index[2]]
+        group_2_data  <- wilcox_df[group_2_index[1]:group_2_index[2],score_index[1]:score_index[2]]
+        
+        wilcox_res <- vector()
+        
+        for ( bins in ( 1:ncol( group_1_data ) ) ) {
+          wilcox_res[bins] <- wilcox.test( group_1_data[,bins],group_2_data[,bins] )$p.value
+        }
+        
+        wilcox_adjust <- p.adjust( wilcox_res,method = "bonferroni" )
+        wilcox_padj_vectors[[ paste( group_1_name,group_2_name,sep="_" )]] <- wilcox_adjust
+      }
+      
+      max_val=max( as.vector( unlist( lapply( wilcox_padj_vectors, function( x ) max( -log10( x ) ) ) ) ) )
+      
+      wilcox_plot_list <- list()
+      wilcox_to_plot <- list()
+      
+      group_names_mapping <- as.data.frame( unique( wilcox_comparisons[,1] ) )
+      
+      group_names_mapping["names"]   <- metadata$group_names
+      colnames( group_names_mapping )<-c( "indexes","names" )
+      
+      for ( i in 1:length( wilcox_padj_vectors ) ) {
+        wilcox_to_plot[[i]]<-as.data.frame( -log10( wilcox_padj_vectors[[i]] ) )
+        wilcox_to_plot[[i]]["xaxis"]<-as.numeric( as.character( rownames( wilcox_to_plot[[i]] ) ) )
+        colnames( wilcox_to_plot[[i]] )<-c( "vals","xaxis" )
+        
+        wilcox_plot_group1<-as.data.frame( unlist( strsplit( names( wilcox_padj_vectors )[i],split = "_" ) )[1] )
+        colnames( wilcox_plot_group1 )<-"indexes"
+        wilcox_plot_group1<- merge( wilcox_plot_group1,group_names_mapping,by="indexes" )[1,2]
+        
+        wilcox_plot_group2<-as.data.frame( unlist( strsplit( names( wilcox_padj_vectors )[i],split = "_" ) )[2] )
+        colnames( wilcox_plot_group2 )<-"indexes"
+        wilcox_plot_group2<- merge( wilcox_plot_group2,group_names_mapping,by="indexes" )[1,2]
+        
+        wilcox_to_plot[[i]]["Group1"]<-wilcox_plot_group1
+        wilcox_to_plot[[i]]["Group2"]<-wilcox_plot_group2
+        wilcox_to_plot[[i]]["Constant"]<-metadata$scores[[score]]
+      }
+      master_list[[score]][["wilcoxon"]] <- wilcox_to_plot
+    }
+  }
+  
+  if (global_flag=="compare_scores") {
+    
+    store_wilcox_scores<-list()
+    
+    for( region in 1:length( metadata$group_names ) ) {
+      
+      wilcox_score_indexes <- paste( col_index_start[1:length( col_index_start )-1],col_index_end,sep=":" ) #this is type dependent
+      wilcox_comparisons <- as.data.frame( expand.grid( wilcox_score_indexes,wilcox_score_indexes ) ) #this is type dependent
+      
+      wilcox_groups_indexes <- paste( line_index_start[1:length( line_index_start )-1],line_index_end,sep=":" )
+      
+      wilcox_matrix <- matrix( nrow = length( wilcox_score_indexes ), ncol = length( wilcox_score_indexes ) )
+      row.names( wilcox_matrix )<-wilcox_score_indexes
+      colnames( wilcox_matrix )<-wilcox_score_indexes
+      
+      wilcox_padj_vectors <- list()
+      
+      for ( comps in ( 1:nrow( wilcox_comparisons ) ) ) {
+        
+        group_1_name  <- as.character( wilcox_comparisons[comps,1] )
+        group_2_name  <- as.character( wilcox_comparisons[comps,2] )
+        
+        group_1_index <- unlist( strsplit( group_1_name,split = ":" ) )
+        group_2_index <- unlist( strsplit( group_2_name,split = ":" ) )
+        
+        regions_index <- unlist( strsplit( wilcox_groups_indexes[region],split = ":" ) )
+        
+        group_1_data  <- wilcox_df[regions_index[1]:regions_index[2],group_1_index[1]:group_1_index[2]] #this is type dependent
+        group_2_data  <- wilcox_df[regions_index[1]:regions_index[2],group_2_index[1]:group_2_index[2]] #this is type dependent
+        
+        wilcox_res <- vector()
+        
+        for ( bins in ( 1:ncol( group_1_data ) ) ) {
+          wilcox_res[bins] <- wilcox.test( group_1_data[,bins],group_2_data[,bins] )$p.value
+        }
+        
+        wilcox_adjust <- p.adjust( wilcox_res,method = "bonferroni" )
+        wilcox_padj_vectors[[ paste( group_1_name,group_2_name,sep="_" )]] <- wilcox_adjust
+      }
+      
+      max_val=max( as.vector( unlist( lapply( wilcox_padj_vectors, function( x ) max( -log10( x ) ) ) ) ) )
+      
+      wilcox_plot_list <- list()
+      wilcox_to_plot <- list()
+      
+      group_names_mapping <- as.data.frame( unique( wilcox_comparisons[,1] ) )
+      
+      group_names_mapping["names"]   <- metadata$scores #this is type dependent
+      colnames( group_names_mapping )<-c( "indexes","names" ) #this is type dependent
+      
+      for ( i in 1:length( wilcox_padj_vectors ) ) {
+        wilcox_to_plot[[i]]<-as.data.frame( -log10( wilcox_padj_vectors[[i]] ) )
+        wilcox_to_plot[[i]]["xaxis"]<-as.numeric( as.character( rownames( wilcox_to_plot[[i]] ) ) )
+        colnames( wilcox_to_plot[[i]] )<-c( "vals","xaxis" )
+        
+        wilcox_plot_group1<-as.data.frame( unlist( strsplit( names( wilcox_padj_vectors )[i],split = "_" ) )[1] )
+        colnames( wilcox_plot_group1 )<-"indexes"
+        wilcox_plot_group1<- merge( wilcox_plot_group1,group_names_mapping,by="indexes" )[1,2]
+        
+        wilcox_plot_group2<-as.data.frame( unlist( strsplit( names( wilcox_padj_vectors )[i],split = "_" ) )[2] )
+        colnames( wilcox_plot_group2 )<-"indexes"
+        wilcox_plot_group2<- merge( wilcox_plot_group2,group_names_mapping,by="indexes" )[1,2]
+        
+        wilcox_to_plot[[i]]["Group1"]<-wilcox_plot_group1
+        wilcox_to_plot[[i]]["Group2"]<-wilcox_plot_group2
+        wilcox_to_plot[[i]]["Constant"]<-metadata$group_names[[region]]
+      }
+      store_wilcox_scores[[region]]<- do.call( "rbind",wilcox_to_plot )
+    }
+    for( score in 1:length( metadata$scores ) ) {
+      master_list[[score]][["wilcoxon"]] <- store_wilcox_scores
+    }
+  }
+  cat( as.character( Sys.time() ), "Wilcoxon test finished.\n" )
+}
+
+
+#### EXPORTATION ####
+
+if ( mode=="deeptools" ) {
+  
+  cat( as.character( Sys.time() ),"Exporting data to the following RDS object:\n   ",paste( opt$output,".boots",sep="" ) )
+  to_export <- master_list
+  to_export[["metadata"]]<-metadata
+  saveRDS( to_export,file = paste( opt$output,".boots",sep="" ) )
+  rm(to_export)
+  cat( "  ... Done!\n" )
+  
+}
+
+##### X AXIS CREATION
+
+cat( as.character( Sys.time() )," Generating the X axis for plots.",sep="" )
+
+xaxis<-list()
+
+linebreaker <- function( x,... ) {
+  gsub( '\\s','\n',x )
+}
+
+if ( metadata$xaxis_values[3]==0 ) {
+  #Centered region
+  #Start and end definition
+  xaxis["xaxis_start"][1] <- as.numeric( 1 ) # position
+  xaxis$xaxis_start[2] <- paste( ( -1 * metadata$xaxis_values[2] / 1000 ),"kb",sep = "" )
+  xaxis["xaxis_end"][1] <- as.numeric( max( bootstraps_to_plot$Bin ) ) # position
+  xaxis$xaxis_end[2] <- paste( ( metadata$xaxis_values[1] / 1000 ),"kb",sep = "" )
+  xaxis["first_region"][1] <- round( as.integer( max( bootstraps_to_plot$Bin ) ) / 2 )
+  xaxis$first_region[2] <- linebreaker( opt$firstRegionName )
+  xaxis$second_region <- NULL
+  
+}else{
+  #Scaled region
+  xaxis["xaxis_start"][1] <- 0 # position
+  xaxis$xaxis_start[2] <- paste( ( -1 * metadata$xaxis_values[2] / 1000 ),"kb",sep = "" )
+  xaxis["xaxis_end"][1] <- as.numeric( max( bootstraps_to_plot$Bin ) ) # position
+  xaxis$xaxis_end[2] <- paste( ( metadata$xaxis_values[1] / 1000 ),"kb",sep = "" )
+  xaxis["first_region"] <- metadata$xaxis_values[2] /  metadata$xaxis_values[4]
+  xaxis$first_region[2] <- linebreaker( opt$firstRegionName )
+  xaxis["second_region"] <- as.numeric(xaxis$xaxis_end[1]) - (metadata$xaxis_values[1]) /  metadata$xaxis_values[4]
+  xaxis$second_region[2] <- linebreaker( opt$secondRegionName )
+}
+
+if ( metadata$xaxis_values[5]>0 ) {
+  xaxis["unscaled5"][1] <- (metadata$xaxis_values[2] + metadata$xaxis_values[5]) / metadata$xaxis_values[4]
+  xaxis$unscaled5[2] <- paste( ( -1 * metadata$xaxis_values[5] / 1000 ),"kb",sep = "" )
+}
+
+if ( metadata$xaxis_values[6]>0 ) {
+  xaxis["unscaled3"][1] <- as.numeric(xaxis$xaxis_end[1]) - (metadata$xaxis_values[1] + metadata$xaxis_values[6]) / metadata$xaxis_values[4]
+  xaxis$unscaled3[2] <- paste( ( -1 * metadata$xaxis_values[6] / 1000 ),"kb",sep = "" )
+}
+
+xaxis["breaks"]<-as.data.frame( as.numeric( c(  xaxis$xaxis_start[1],
+                                                xaxis$unscaled5[1],
+                                                xaxis$first_region[1],
+                                                xaxis$second_region[1],
+                                                xaxis$unscaled3[1],
+                                                xaxis$xaxis_end[1] ) ) )
+
+xaxis["names"]<-as.data.frame( as.character( c(  xaxis$xaxis_start[2],
+                                                 xaxis$unscaled5[2],
+                                                 xaxis$first_region[2],
+                                                 xaxis$second_region[2],
+                                                 xaxis$unscaled3[2],
+                                                 xaxis$xaxis_end[2] ) ) )
+
+cat( "  ... Done!\n" )
+
+
+
+##### BOOTSTRAP PLOT
+
+
+
+cat( as.character( Sys.time() ), "Starting Bootstraps plotting to the following file:\n   ",paste( opt$output,"_bootstraps.pdf",sep="" ) )
+
+pdf( file = paste( opt$output,"_bootstraps.pdf",sep="" ),width = opt$bootPlotWidth,height = opt$bootPlotHeight )
+
+color_palette<-c( "#000000",
+                  colorschemes$Categorical.12[[12]],
+                  colorschemes$Categorical.12[[8]],
+                  colorschemes$Categorical.12[[2]],
+                  colorschemes$Categorical.12[[10]],
+                  colorschemes$Categorical.12[[6]] )
+
+fill_palette<-c( "#919191",
+                 colorschemes$Categorical.12[[11]],
+                 colorschemes$Categorical.12[[7]],
+                 colorschemes$Categorical.12[[1]],
+                 colorschemes$Categorical.12[[9]],
+                 colorschemes$Categorical.12[[5]] )
+
+boot_plot_data <- list()
+
+for (group in 1:length(metadata$group_names)){ # One plot per region
+  data_frame_storage <- list()
+  
+  
+  for (score in 1:length(metadata$scores)) {
+    score_name <- metadata$scores[score]
+    group_name <- metadata$group_names[group]
+    data_frame_storage[[score]] <- master_list[[score_name]]$bootstraps[[group_name]]
+  }
+  
+  bootstraps_to_plot <- do.call( rbind,data_frame_storage)
+  boot_plot_data[[group]]<-bootstraps_to_plot
+}
+
+bootstraps_to_plot<-do.call("rbind", boot_plot_data)
+rm(boot_plot_data)
+
+make_boot_plot<-function(x,type){
+  ggplot(x,aes( x=x$Bin, color=x[,type], fill=x[,type] ))+
+    geom_ribbon( aes( ymin = x$Min, ymax = x$Max ),alpha=0.5,linetype=0 )+
+    geom_line( aes( y=x$Mean ) )+
+    scale_color_manual( "", values = color_palette )+
+    scale_fill_manual( "", values = fill_palette )+
+    scale_x_continuous( NULL , breaks=xaxis$breaks, labels=xaxis$names )+
+    ylab( opt$signalName )+
+    panel_border( size=1, remove=FALSE )+
+    theme( axis.text.y = element_text( size = 12, color = "#383838" ),
+           axis.text.x = element_text( size = 12,  color = "#383838" ),
+           axis.title.x = element_text( size = 13 ),
+           plot.title = element_text( size = 13, face = "plain" ),
+           line = element_line( size=1 ),
+           strip.placement = "outside",
+           strip.background = element_blank(),
+           plot.background = element_rect( colour = "black" ),
+           panel.border = element_rect( colour = "black" ),
+           axis.line = element_blank(),
+           panel.spacing = unit( 1, "line" ) )
+}
+
+boot_plot_list <- list()
+
+if(global_flag == "compare_regions") {
+  for (score in 1:length(unique(bootstraps_to_plot$Score))){
+    data <- bootstraps_to_plot[which(bootstraps_to_plot$Score==unique(bootstraps_to_plot$Score)[score]),]
+    boot_plot_list[[score]] <- make_boot_plot(data,"Region") + ggtitle(as.character(unique(data$Score)))
+    if ( is.null( opt$font )==FALSE ) {
+      font_add( family = "plot_font", regular = opt$font )
+      showtext_auto()
+      boot_plot_list[[score]] <- boot_plot_list[[score]] + theme( text = element_text( family = "plot_font" ) )
+    }
+    if( is.null( opt$bootPlotColors )==FALSE ) {
+      color_pal<-read.table( opt$bootPlotColors,header = F,sep = "\t" )
+      boot_plot_list[[score]] <- boot_plot_list[[score]] + 
+        scale_color_manual( "",values = color_pal[,1] ) +
+        scale_fill_manual( "",values = color_pal[,2] )
+    }
+  }
+}
+
+
+if(global_flag == "compare_scores") {
+  for (region in 1:length(unique(bootstraps_to_plot$Region))){
+    data <- bootstraps_to_plot[which(bootstraps_to_plot$Region==unique(bootstraps_to_plot$Region)[region]),]
+    boot_plot_list[[region]] <- make_boot_plot(data,"Score") + ggtitle(as.character(unique(data$Region)))
+    if ( is.null( opt$font )==FALSE ) {
+      font_add( family = "plot_font", regular = opt$font )
+      showtext_auto()
+      boot_plot_list[[score]] <- boot_plot_list[[score]] + theme( text = element_text( family = "plot_font" ) )
+    }
+    if( is.null( opt$bootPlotColors )==FALSE ) {
+      color_pal<-read.table( opt$bootPlotColors,header = F,sep = "\t" )
+      boot_plot_list[[score]] <- boot_plot_list[[score]] + 
+        scale_color_manual( "",values = color_pal[,1] ) +
+        scale_fill_manual( "",values = color_pal[,2] )
+    }
+  }
+}
+
+
+invisible( boot_plot_list )
+
+invisible( dev.off() )
+
+cat( "  ... Done!\n" )
+
+
+##### WILCOXON PLOT
+
+cat( as.character( Sys.time() ), "Starting Wilcoxon corrected tests plotting to the following file:\n   ",paste( opt$output,"_wilcoxon.pdf",sep="" ) )
+
+rec_start<-as.numeric( xaxis$xaxis_start[[1]] )
+rec_end<-as.numeric( xaxis$xaxis_end[[1]] )
+
+pdf( file = paste( opt$output,"_wilcoxon.pdf",sep="" ),width = opt$wilcoxPlotWidth,height = opt$wilcoxPlotHeight )
+
+make_wilcox_plot<-function(x){
+  ggplot( x,aes( x=x$xaxis,y=x$vals ) )+
+    geom_rect( aes( xmin = rec_start, xmax = rec_end, ymin = -0.1, ymax =-log10( opt$wilcoxThreshold ) ), fill = "gray" ) + 
+    geom_line( color="#ff6100" )+
+    facet_grid( Group1 ~ Group2 )+
+    scale_x_continuous( "Genomic position",breaks=xaxis$breaks,labels=xaxis$names )+
+    ylab( "-log10( Bonferroni corrected \n Wilcoxon rank-sum p-value )" )+
+    panel_border( size=1,remove=FALSE )+
+    theme( axis.text = element_text( size=11 ),
+           axis.text.y = element_text( size=10 ),
+           axis.text.x = element_text( size=10,angle=50,hjust=1,vjust=1 ),
+           plot.title = element_text( size = 13, face = "plain" ),
+           line = element_line( size=1 ),
+           strip.placement = "outside",
+           strip.background = element_blank(),
+           plot.background = element_rect( colour = "black" ),
+           panel.border = element_rect( colour = "black" ),
+           axis.line = element_blank(),
+           panel.spacing = unit( 1,"line" ) )
+  
+}
+
+wilcox_plot_list <- list()
+
+if(global_flag == "compare_scores") {
+  wilcox_to_plot <- master_list[[1]]$wilcoxon
+  for (i in 1:length(wilcox_to_plot)) {
+    wilcox_plot_list[[i]] <- make_wilcox_plot(wilcox_to_plot[[i]]) + ggtitle(unique(wilcox_to_plot[[i]]$Constant))
+    if ( is.null( opt$font )==FALSE ) {
+      font_add( family = "plot_font", regular = opt$font )
+      showtext_auto()
+      wilcox_plot_list[[i]] <- wilcox_plot_list[[i]] + theme( text = element_text( family = "plot_font" ) )
+    }
+  }
+}
+
+if(global_flag == "compare_regions") {
+  for (score in 1:length(master_list)){
+    wilcox_to_plot<-do.call(rbind,master_list[[score]]$wilcoxon)
+    wilcox_plot_list[[score]] <- make_wilcox_plot(wilcox_to_plot) + ggtitle(unique(wilcox_to_plot$Constant))
+    if ( is.null( opt$font )==FALSE ) {
+      font_add( family = "plot_font", regular = opt$font )
+      showtext_auto()
+      wilcox_plot_list[[score]] <- wilcox_plot_list[[score]] + theme( text = element_text( family = "plot_font" ) )
+    }
+  }
+}
+
+invisible( wilcox_plot_list )
+
+invisible( dev.off() )
+
+cat( "  ... Done!\n" )
+cat( as.character( Sys.time() ), "Job finished succesfully!\n" )
+
