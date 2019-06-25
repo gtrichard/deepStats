@@ -1,0 +1,37 @@
+package:
+  name: deepStats
+  version: 0.2
+
+source:
+  path: ../
+
+build:
+  number: 0
+  rpaths:
+    - lib/R/lib/
+    - lib/
+
+requirements:
+  build:
+    - r-base
+    - r-boot
+    - r-ggplot2
+    - r-optparse
+    - r-cowplot
+    - r-showtext
+    - r-tidyverse
+    - r-dichromat
+    - r-purrr
+    - r-essentials
+  run:
+
+
+test:
+  commands:
+    - compareCurves --help
+
+about:
+  home: 'https://github.com/gtrichard/deepStats'
+  license: GPL3
+  summary: A statistical and dataviz toolbox for deeptools, genomic signals, and more.
+license_file: LICENSE.txt
