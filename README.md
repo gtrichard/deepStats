@@ -2,7 +2,7 @@
 
 ![Alt text](docs/images/deepStats_logo.png?raw=true "Title")
 
-A stastitical toolbox and beyond for deeptools and genomic signals.
+**deepStats is a statistical and dataviz toolbox for deeptools, genomic signals, and more (GOterms, etc).**
 
 ## Installation
 
@@ -13,7 +13,7 @@ By using the following command-line, you will be able to use the different tools
 
 - **As R Notebooks**
 
-Simply install these dependencies:
+Simply install these packages in your R environment:
 
 ```
 install.packages('optparse',repos = "http://cran.us.r-project.org")
@@ -37,7 +37,7 @@ Not yet available.
 
 - **compareCurves**
 
-Compares the curves derived from multiple genomic signals and region sets by using bootstrapping and Wilcoxon rank-sum tests in order to identify significantly different loci (bins). It uses `deepTools computeMatrix --outFileNameMatrix matrix.txt` as an input file. `compareCurves --help` will give you all required information to use the tool. For further documentation about deepTools and how to generate the input file, please refer to: https://deeptools.readthedocs.io/en/develop/content/tools/computeMatrix.html. Compare
+Compares the curves derived from multiple genomic signals and region sets by using bootstrapping and Wilcoxon rank-sum tests in order to identify significantly different loci (bins). It uses `deepTools computeMatrix --outFileNameMatrix matrix.txt` as an input file. `compareCurves --help` will give you all required information to use the tool. For further documentation about deepTools and how to generate the input file, please refer to: https://deeptools.readthedocs.io/en/develop/content/tools/computeMatrix.html.
 
 - **compareValues**
 
