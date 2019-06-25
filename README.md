@@ -7,12 +7,19 @@
 - **As a command-line tool through Conda**
 
 By using the following command-line, you will be able to use the different tools listed below:
-`conda install deepStats`
+```
+conda create -n deepStats deepStats
+conda activate deepStats
+```
+
+Or simply:
+```
+conda install deepStats
+```
 
 - **As R Notebooks**
 
-Simply install these packages in your R environment:
-
+Install the following packages in your R environment:
 ```
 install.packages('optparse',repos = "http://cran.us.r-project.org")
 install.packages('boot',repos = "http://cran.us.r-project.org")
@@ -23,7 +30,10 @@ install.packages('dichromat',repos = "http://cran.us.r-project.org")
 install.packages('purrr',repos = "http://cran.us.r-project.org")
 ```
 
-Then clone this repository using `git clone https://github.com/gtrichard/deepStats` to access the R Notebooks stored in `deepStats/notebooks/`.
+Then, access the R Notebooks stored in `deepStats/notebooks/` by cloning this repository:
+```
+git clone https://github.com/gtrichard/deepStats
+```
 
 - **As Galaxy wrappers**
 
