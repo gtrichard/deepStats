@@ -8,13 +8,13 @@
 
 By using the following command-line, you will be able to use the different tools listed below:
 ```
-conda create -n deepStats deepStats
+conda create -n deepStats -c bioconda deepStats
 conda activate deepStats
 ```
 
 Or simply:
 ```
-conda install deepStats
+conda install -c bioconda deepStats
 ```
 
 - **As R Notebooks**
