@@ -12,7 +12,7 @@ build:
     - lib/
 
 requirements:
-  build:
+  host:
     - r-base
     - r-boot
     - r-ggplot2
@@ -24,7 +24,16 @@ requirements:
     - r-purrr
     - r-essentials
   run:
-
+    - r-base
+    - r-boot
+    - r-ggplot2
+    - r-optparse
+    - r-cowplot
+    - r-showtext
+    - r-tidyverse
+    - r-dichromat
+    - r-purrr
+    - r-essentials
 
 test:
   commands:
