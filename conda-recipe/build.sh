@@ -1,2 +1,3 @@
 #!/bin/bash
-cp /bin/compareCurves $PREFIX/bin/compareCurves
+mkdir -p $PREFIX/bin
+cp $RECIPE_DIR/../bin/dsCompareCurves $PREFIX/bin/dsCompareCurves

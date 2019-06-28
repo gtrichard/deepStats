@@ -1,5 +1,5 @@
 package:
-  name: deepStats
+  name: deepstats
   version: 0.2
 
 source:
@@ -13,7 +13,7 @@ build:
 
 requirements:
   host:
-    - r-base
+    - r-base >=3.5.1
     - r-boot
     - r-ggplot2
     - r-optparse
@@ -24,7 +24,7 @@ requirements:
     - r-purrr
     - r-essentials
   run:
-    - r-base
+    - r-base >=3.5.1
     - r-boot
     - r-ggplot2
     - r-optparse
@@ -37,7 +37,7 @@ requirements:
 
 test:
   commands:
-    - compareCurves --help
+    - dsCompareCurves --help
 
 about:
   home: 'https://github.com/gtrichard/deepStats'
