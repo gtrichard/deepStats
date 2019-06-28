@@ -2,6 +2,8 @@
 
 **deepStats is a statistical and dataviz toolbox for deeptools, genomic signals, and more (GOterms, etc).**
 
+/!\ **This is currently a Work In Progress** /!\ 
+
 ## Installation
 
 - **As a command-line tool through Conda**
