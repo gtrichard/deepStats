@@ -81,7 +81,7 @@ option_list = list(
 
   make_option( c( "--bootPlotRatio" ), type="character", default=0.85,
                help="Changes the aspect ratio of the plot. A value < 1 results in a wide plot,
-               a value > 1 results in a narrow plot. Default: 0.85.", metavar="numeric" ),
+               a value > 1 results in a narrow plot. Default: 0.85.", metavar="character" ),
 
   make_option( c( "--bootPlotWidth" ), type="numeric", default=5.2,
                help="How large the bootstraps plot should be. Default: 5.2", metavar="numeric" ),
@@ -325,32 +325,34 @@ if ( mode=="deeptools" ) {
 #### WILCOXON TESTS CORRECTED ####
 
 if ( mode=="deeptools" ) {
-  #
-  # if ( is.null( opt$wilcoxStartBin )==TRUE && is.null( opt$wilcoxEndBin )==FALSE ) {
-  #   print_help( opt_parser )
-  #   stop( "Both --wilcoxStartBin and --wilcoxEndBin must be given.", call.=FALSE )
-  # }
-  #
-  # if ( is.null( opt$wilcoxStartBin )==FALSE && is.null( opt$wilcoxEndBin )==TRUE ) {
-  #   print_help( opt_parser )
-  #   stop( "Both --wilcoxStartBin and --wilcoxEndBin must be given.", call.=FALSE )
-  # }
-  #
-  # if ( is.null( opt$wilcoxStartBin )==FALSE && is.null( opt$wilcoxEndBin )==FALSE ) {
-  #   if ( opt$wilcoxStartBin > opt$wilcoxEndBin ) {
-  #     print_help( opt_parser )
-  #     stop( "--wilcoxStartBin must be superior to --wilcoxEndBin.", call.=FALSE )
-  #   }
-  #   if ( opt$wilcoxStartBin > opt$wilcoxEndBin ) {
-  #     cat( as.character( Sys.time() ), "Starting Wilcoxon rank-sum test on the following bins: from",opt$wilcoxStartBin,
-  #          "to",opt$wilcoxEndBin, "\n" )
-  #     wilcox_df <- dat[,opt$wilcoxStartBin:opt$wilcoxEndBin]
-  #     #wilcox_dfs <- lapply( bootstrap_dfs, function( x ) {x[which( x$Bin >= opt$wilcoxStartBin & x$Bin <= opt$wilcoxEndBin  ),]} )
-  #   }
-  # }else{
-  #   cat( as.character( Sys.time() ), "Starting Wilcoxon rank-sum test.\n" )
-  #   wilcox_df <- dat
-  # }
+
+#currently not implemented but it doesn't hurt to keep.
+
+   if ( is.null( opt$wilcoxStartBin )==TRUE && is.null( opt$wilcoxEndBin )==FALSE ) {
+     print_help( opt_parser )
+     stop( "Both --wilcoxStartBin and --wilcoxEndBin must be given.", call.=FALSE )
+   }
+
+   if ( is.null( opt$wilcoxStartBin )==FALSE && is.null( opt$wilcoxEndBin )==TRUE ) {
+     print_help( opt_parser )
+     stop( "Both --wilcoxStartBin and --wilcoxEndBin must be given.", call.=FALSE )
+   }
+
+   if ( is.null( opt$wilcoxStartBin )==FALSE && is.null( opt$wilcoxEndBin )==FALSE ) {
+     if ( opt$wilcoxStartBin > opt$wilcoxEndBin ) {
+       print_help( opt_parser )
+       stop( "--wilcoxStartBin must be superior to --wilcoxEndBin.", call.=FALSE )
+     }
+     if ( opt$wilcoxStartBin > opt$wilcoxEndBin ) {
+       cat( as.character( Sys.time() ), "Starting Wilcoxon rank-sum test on the following bins: from",opt$wilcoxStartBin,
+            "to",opt$wilcoxEndBin, "\n" )
+       wilcox_df <- dat[,opt$wilcoxStartBin:opt$wilcoxEndBin]
+       #wilcox_dfs <- lapply( bootstrap_dfs, function( x ) {x[which( x$Bin >= opt$wilcoxStartBin & x$Bin <= opt$wilcoxEndBin  ),]} )
+     }
+   }else{
+     cat( as.character( Sys.time() ), "Starting Wilcoxon rank-sum test.\n" )
+     wilcox_df <- dat
+   }
 
   if (global_flag=="compare_regions") {
 
