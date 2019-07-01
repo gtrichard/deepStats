@@ -42,6 +42,14 @@ Not yet available.
 
 Compares the curves derived from multiple genomic signals and region sets by using bootstrapping and Wilcoxon rank-sum tests in order to identify significantly different loci (bins). It uses `deeptools reference-point computeMatrix --outFileNameMatrix matrix.txt` (can be `reference-point` or `scaled-region`) as an input file. `dsCompareCurves --help` will give you all required information to use the tool. For further documentation about deepTools and how to generate the input file, please refer to: https://deeptools.readthedocs.io/en/develop/content/tools/computeMatrix.html.
 
-- **compareValues**
+- **dsCompareValues**
 
-- **compareToRandom**
+Not yet available (next planned).
+
+- **dsCompareToRandom**
+
+Not yet available.
+
+- **dsGOCloudMap**
+
+Not yet available.
