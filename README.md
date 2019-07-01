@@ -14,7 +14,7 @@ conda create -c bioconda -c conda-forge -n deepStats python=3.7 deepStats
 conda activate deepStats
 ```
 
-- **As R Notebooks**
+- **As R Notebooks** (currently not up-to-date, please use conda).
 
 Install the following packages in your R environment:
 ```
