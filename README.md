@@ -10,13 +10,8 @@
 
 By using the following command-line, you will be able to use the different tools listed below:
 ```
-conda create -n deepStats -c bioconda deepStats
+conda create -c bioconda -c conda-forge -n deepStats python=3.7 deepStats
 conda activate deepStats
-```
-
-Or simply:
-```
-conda install -c bioconda deepStats
 ```
 
 - **As R Notebooks**
