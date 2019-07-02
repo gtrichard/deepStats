@@ -210,6 +210,20 @@ if ( is.null(opt$regionLabels)==FALSE ) {
   metadata$group_names <- unlist(str_split(opt$regionLabels,";"))
 }
 
+#### LINEBREAKS FOR LONG LEGENDS ####
+
+for (i in 1:length(metadata$group_names)){
+  if(nchar(metadata$group_names[[i]]) >=21 ){
+    metadata$group_names[[i]] <- paste(strwrap(metadata$group_names[[i]],width = 20), collapse="\n")
+  }
+}
+
+for (i in 1:length(metadata$scores)){
+  if(nchar(metadata$scores[[i]]) >=21 ){
+    metadata$scores[[i]] <- paste(strwrap(metadata$scores[[i]],width = 20), collapse="\n")
+  }
+}
+
 #### GLOBAL FLAG DETERMINATION FOR COMPARISON ####
 
 if(is.null(opt$comparison)){
