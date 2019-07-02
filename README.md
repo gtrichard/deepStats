@@ -2,7 +2,7 @@
 
 **deepStats is a statistical and dataviz toolbox for deeptools, genomic signals, and more (GOterms, etc).**
 
-/!\ **This is currently a Work In Progress** /!\ 
+/!\ **This is currently a Work In Progress** /!\
 
 ## Installation
 
@@ -14,7 +14,7 @@ conda create -c bioconda -c conda-forge -n deepStats python=3.7 deepStats
 conda activate deepStats
 ```
 
-- **As R Notebooks** (currently not up-to-date, please use conda).
+- **As R Notebooks**
 
 Install the following packages in your R environment:
 ```
