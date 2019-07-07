@@ -31,12 +31,16 @@ option_list = list(
                perform is otherwise automatically detected.", metavar="character" ),
 
   make_option( c( "--scoreLabels" ), type="character", default=NULL,
-               help="Names of the scores. It must be provided as text seperated by semi-colons, i.e.
-               'Score A; Score B; Score C'.", metavar="character" ),
+               help="Names of the scores to be displayed on the plots. It must be provided as text seperated by semi-colons, i.e.
+               'Score A;Score B;Score C'.", metavar="character" ),
 
   make_option( c( "--regionLabels" ), type="character", default=NULL,
-               help="Names of the regions. It must be provided as text seperated by semi-colons, i.e.
+               help="Names of the regions to be displayed on the plots. It must be provided as text seperated by semi-colons, i.e.
                'Regions A; Regions B; Regions C'.", metavar="character" ),
+
+  make_option( c( "--signalName" ), type="character", default="Genomic signal",
+               help="Name given to the signal, for instance 'H3K4me3 log2input'.
+               Default: 'Genomic signal'", metavar="character" ),
 
   make_option( c( "--bootstraps", "-b" ), type="integer", default=1000,
                help="Number of bootstraps to perform. Default: 1000.", metavar="integer" ),
@@ -61,16 +65,16 @@ option_list = list(
                help="Threshold used to define significant bins on the Wilcoxon rank-sum
                test plot. Default: 0.05", metavar="numeric" ),
 
-  make_option( c( "--signalName" ), type="character", default="Genomic signal",
-               help="Name given to the signal, for instance 'H3K4me3 log2input'.
-               Default: 'Genomic signal'", metavar="character" ),
-
   make_option( c( "--firstRegionName" ), type="character", default="TSS",
                help="Name of the central or left region. Default: TSS", metavar="character" ),
 
   make_option( c( "--secondRegionName" ), type="character", default="TES",
                help="Name of the right region, only used when deeptools computeMatrix
                ran in scaled-regions mode. Default: TES", metavar="character" ),
+
+  make_option( c( "--bootPlotShareY" ), type="character", default="TRUE",
+               help="Given TRUE or FALSE, defines if the bootstraps plots should
+               share the same scale on the y axis or not. Default: TRUE", metavar="character" ),
 
   make_option( c( "--bootPlotColors" ), type="character", default=NULL,
                help="Change the bootstraps plot color palette to a user-provided one. The file must
