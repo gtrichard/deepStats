@@ -1,4 +1,7 @@
-![Alt text](docs/images/deepStats_logo.png?raw=true "Title")
+![](https://anaconda.org/bioconda/deepstats/badges/installer/conda.svg) ![](
+https://anaconda.org/bioconda/deepstats/badges/version.svg)
+
+![](docs/images/deepStats_logo.png?raw=true "Title")
 
 **deepStats is a statistical and dataviz toolbox for deeptools, genomic signals, and more (GOterms, etc).**
 
