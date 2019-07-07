@@ -1,9 +1,8 @@
-![](https://anaconda.org/bioconda/deepstats/badges/installer/conda.svg) ![](
-https://anaconda.org/bioconda/deepstats/badges/version.svg)
+[![install with bioconda](https://img.shields.io/badge/install%20with-bioconda-brightgreen.svg?style=flat)](http://bioconda.github.io/recipes/deepstats/README.html) ![](https://anaconda.org/bioconda/deepstats/badges/version.svg) ![](https://anaconda.org/bioconda/deepstats/badges/latest_release_date.svg) 
 
 ![](docs/images/deepStats_logo.png?raw=true "Title")
 
-**deepStats is a statistical and dataviz toolbox for deeptools, genomic signals, and more (GOterms, etc).**
+**deepStats v0.3 is a statistical and dataviz toolbox for deeptools, genomic signals, and more (GOterms, etc).**
 
 /!\ **This is currently a Work In Progress** /!\
 
