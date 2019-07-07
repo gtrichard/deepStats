@@ -1,14 +1,10 @@
 <macros>
-   <token name="@THREADS@">--numberOfProcessors "\${GALAXY_SLOTS:-4}"</token>
+   <token name="@THREADS@">--CPU "\${GALAXY_SLOTS:-4}"</token>
    <token name="@WRAPPER_VERSION@">1.0.0</token>
+   <token name="@REFERENCES@">https://github.com/gtrichard/deepStats</token>
    <xml name="requirements">
      <requirements>
        <requirement type="package" version="0.2">deepstats</requirement>
      </requirements>
    </xml>
-   <xml name="dscomparecurves_options">
-    <expand macro="zMin_zMax" />
-    <expand macro="colorMap" />
-    <expand macro="plotTitle" />
-    <expand macro="plotNumbers" />
-   </xml>
+</macros>

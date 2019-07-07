@@ -24,7 +24,7 @@
           --firstRegionName '$scaleRegions.firstRegionName'
         #end if
 
-        #if $advancedStatsOptions.showOptions == "yes":
+        #if $statsOptions.showStatsOptions == "yes":
           --bootstraps '$bootsraps'
           --bootstrapsCI '$bootstrapsCI'
           --wilcoxThreshold '$wilcoxThreshold'
@@ -47,7 +47,7 @@
 ]]>
     </command>
     <inputs>
-
+### Add deepTools computeMatrix as input or .dscc file
       <param argument="--input" type="tabular"
         label="outFileNameMatrix file from the deepTools computeMatrix tool, not the regular output file."/>
 
@@ -93,8 +93,8 @@
         </when>
       </conditional>
 
-      <conditional name="advancedStatsOptions">
-        <param name="showOptions" type="select" label="Show advanced options for statistical analyses?">
+      <conditional name="statsOptions">
+        <param name="showStatsOptions" type="select" label="Show advanced options for statistical analyses?">
           <option value="no" selected="true">no</option>
           <option value="yes">yes</option>
         </param>
@@ -114,7 +114,7 @@
       </conditional>
 
       <conditional name="plotOptions">
-        <param name="showAdvancedOptions" type="select" label="Show advanced options for plots?">
+        <param name="showPlotOptions" type="select" label="Show advanced options for plots?">
           <option value="no" selected="true">no</option>
           <option value="yes">yes</option>
         </param>
@@ -152,4 +152,37 @@
               help="How tall the Wilcoxon rank-sum test  plot should be."/>
           </when>
       </conditional>
+
+      <conditional name="plotOptions">
+        <param name="showAdvancedOptions" type="select" label="Show advanced options?">
+          <option value="no" selected="true">no</option>
+          <option value="yes">yes</option>
+        </param>
+        <when value="no"/>
+        <when value="yes">
+          <param argument="--CPU" type="integer" value=4 label="--CPU"
+            help="Number of CPU to use."/>
+        </when>
+      </conditional>
     </inputs>
+    <outputs>
+      <data format="pdf" name="pdf_file1" label="${tool.name} on ${on_string}: Bootstrap Plot" from_work_dir="_bootstraps.pdf"/>
+      <data format="pdf" name="pdf_file2" label="${tool.name} on ${on_string}: Wilcox Plot" from_work_dir="_wilcoxon.pdf"/>
+      <data format="rdata" name="dscc" label="${tool.name} on ${on_string}: dscc object" from_work_dir=".dscc" />
+    </outputs>
+    <tests>
+      <test>
+      </test>
+    </tests>
+    <help>
+      <![CDATA[
+      This tool assesses if multiple genomics signals ( ChIP-seq, ATAC-seq... ) are significantly different or
+      not between conditions ( control, KO1, KO2, etc ). `dsCompareCurves` uses bootstraps and corrected
+      Wilcoxon Rank-sum tests to do so. The input of this tool corresponds to the output of deepTools
+      `computeMatrix --outFileNameMatrix`. If multiple region sets have been used in deepTools, one plot and
+      tab-delimited table will be produced for each set of regions.
+
+      @REFERENCES@
+      ]]>
+    </help>
+</tool>
