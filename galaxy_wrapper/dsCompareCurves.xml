@@ -1,6 +1,7 @@
 <tool id="deepstats_compare_curves" name="dsCompareCurves" version="@WRAPPER_VERSION@.0" profile="18.01">
     <description>
-        compares multiple bigwigs over multiple region sets with bootstraps and Wilcoxon rank-sum test
+        compares multiple bigwigs over multiple region sets with bootstraps and
+        Wilcoxon rank-sum test using deepTools computeMatrix output
     </description>
     <macros>
         <token name="@BINARY@">dsCompareCurves</token>
@@ -8,8 +9,8 @@
     </macros>
     <expand macro="requirements" />
     <command>
-<![CDATA[
-    @BINARY@
+     <![CDATA[
+      @BINARY@
         --input '$input'
         --output '$output'
         --comparison '$comparison'
@@ -44,36 +45,35 @@
         #if $advancedOptions.showAdvancedOptions == "yes":
           --CPU '$CPU'
         #end if
-]]>
+    ]]>
     </command>
     <inputs>
-### Add deepTools computeMatrix as input or .dscc file
-      <param argument="--input" type="tabular"
-        label="outFileNameMatrix file from the deepTools computeMatrix tool, not the regular output file."/>
+      <param argument="--input" format="tabular" type="data"
+        label="deepTools computeMatrix output file."/>
 
       <param argument="--comparison" type="select"
-        label="Choose what you to compare">
+        label="What do you want to compare?">
         <option value="scores" selected="true">scores</option>
         <option value="regions">regions</option>
       </param>
 
-      <param argument="--scoreLabels" type="character" value= "Score A;Score B;Score C"
-        label="--scoreLabels" help="Names of the scores to be displayed on the plots. It must be provided as text seperated
+      <param argument="--scoreLabels" type="text" value= "Score A;Score B;Score C"
+        label="Name of the scores" help="For plot display. It must be provided as text seperated
         by semi-colons, i.e. 'Score A;Score B;Score C' as in the example."/>
 
-      <param argument="--regionLabels" type="character" value= "Region A;Region B;Region C"
-        label="--regionLabels" help="Names of the regions to be displayed on the plots. It must be provided as text seperated
+      <param argument="--regionLabels" type="text" value= "Region A;Region B;Region C"
+        label="Name of the regions" help="For plot display. It must be provided as text seperated
         by semi-colons, i.e. 'Regions A;Regions B;Regions C' as in the example."/>
 
-      <param argument="--signalName" type="character" value= "Normalized\nlog2(H3K4me3 ChIP-seq/Input)"
-        label="--signalName" help="Name given to the signal on the plots, \n can be added for linebreaks."/>
+      <param argument="--signalName" type="text" value= "Normalized ATAC-seq counts"
+        label="Name of the genomic signal" help="Name given to the signal on the plots, \n can be added for linebreaks."/>
 
       <conditional name="scaleRegions">
-        <param name="showScaleRegionsOpt" type="select" label="The input matrix was computed in scale-regions mode">
-          <option value="no" selected="true">no</option>
-          <option value="yes">yes</option>
+        <param name="showScaleRegionsOpt" type="select" label="Which mode was used in deepTools computeMatrix?">
+          <option value="reference-point" selected="true">reference-point</option>
+          <option value="scale-regions">scale-regions</option>
         </param>
-        <when value="yes">
+        <when value="scale-regions">
           <param argument="--firstRegionName" type="text" value="TSS" size="10"
                     label="Label for the region start"
                     help ="Label shown in the plot
@@ -84,7 +84,8 @@
                     help ="Label shown in the plot
                     for the end of the region. Default is TES (transcription end site),
                     but could be changed to anything, e.g. &quot;peak end&quot;." />
-        <when value="no">
+        </when>
+        <when value="reference-point">
           <param argument="--firstRegionName" type="text" value="TSS"
                     label="Label for the region start"
                     help ="Label shown in the plot
@@ -100,16 +101,16 @@
         </param>
           <when value="no"/>
           <when value="yes">
-            <param argument="--bootstraps" type="integer" value=1000
+            <param argument="--bootstraps" type="integer" value="1000"
               label="--bootstraps" help="Number of bootstraps to perform. Default is 1000,
-              increasing this number will increase the computing time." />
-            <param argument="--bootstrapsCI" type="float" value=0.95
+              increasing this number will increase the computing time."/>
+            <param argument="--bootstrapsCI" type="float" value="0.95"
                 label="--bootstrapsCI" help="Bootstraps confidence interval. Default is 0.95,
                 increasing this will make the analysis more stringent by increasing
-                the min and max of the shadowed area on the bootstrap plot." />
-            <param argument="--wilcoxThreshold" type="float" value=0.05
+                the min and max of the shadowed area on the bootstrap plot."/>
+            <param argument="--wilcoxThreshold" type="float" value="0.05"
                 label="--wilcoxThreshold" help="Threshold used to define significant
-                bins on the Wilcoxon rank-sum test plot (grey box). Default is 0.05" />
+                bins on the Wilcoxon rank-sum test plot (grey box). Default is 0.05"/>
          </when>
       </conditional>
 
@@ -120,35 +121,35 @@
         </param>
           <when value="no"/>
           <when value="yes">
-            <param argument="--font" type="ttf" value="" label="--font"
+            <param argument="--font" type="file" format="ttf" value=" " label="--font" optional="true"
               help="Font used for plotting, given a TTF file. Default is usually Helvetica."/>
 
             <param argument="--bootPlotShareY" type="select" label="--bootPlotShareY">
               <option value="TRUE" selected="true">TRUE</option>
               <option value="FALSE">FALSE</option>
-            <param/>
+            </param>
 
-            <param argument="--bootPlotColors" type="tabular" value="" label="--bootPlotColors"
+            <param argument="--bootPlotColors" type="file" format="tabular" value=" " label="--bootPlotColors"
               help="Change the bootstraps plot color palette to a user-provided one. The file must
               be tab-delimited and contain for each line two HTML color codes ( #3366CC   #769EF2 ).
               The first column corresponds to the mean color, the second column corresponds to the
               color of the bootstrap confidence interval shadowed area. The default color scale
               contains 6 colors that are color blind friendly using the dichromat R package."/>
 
-            <param argument="--bootPlotRatio" type="float" value=0.85 label="--bootPlotRatio"
-              help="Changes the aspect ratio of the plot. A value < 1 results in a wide plot,
-              a value > 1 results in a narrow plot. Default: 0.85."/>
+            <param argument="--bootPlotRatio" type="float" value="0.85" label="--bootPlotRatio"
+              help="Changes the aspect ratio of the plot. A value inferior to 1 results in a wide plot,
+              a value above 1 results in a narrow plot. Default: 0.85."/>
 
-            <param argument="--bootPlotWidth" type="float" value=5.2 label="--bootPlotWidth"
+            <param argument="--bootPlotWidth" type="float" value="5.2" label="--bootPlotWidth"
               help="How large the bootstraps plot should be."/>
 
-            <param argument="--bootPlotHeight" type="float" value=3.7 label="--bootPlotHeight"
+            <param argument="--bootPlotHeight" type="float" value="3.7" label="--bootPlotHeight"
               help="How tall the bootstraps plot should be."/>
 
-            <param argument="--wilcoxPlotWidth" type="float" value=4.6 label="--wilcoxPlotWidth"
+            <param argument="--wilcoxPlotWidth" type="float" value="4.6" label="--wilcoxPlotWidth"
               help="How large the Wilcoxon rank-sum test plot should be."/>
 
-            <param argument="--wilcoxPlotHeight" type="float" value=4.6 label="--wilcoxPlotHeight"
+            <param argument="--wilcoxPlotHeight" type="float" value="4.6" label="--wilcoxPlotHeight"
               help="How tall the Wilcoxon rank-sum test  plot should be."/>
           </when>
       </conditional>
@@ -160,7 +161,7 @@
         </param>
         <when value="no"/>
         <when value="yes">
-          <param argument="--CPU" type="integer" value=4 label="--CPU"
+          <param argument="--CPU" type="integer" value="4" label="--CPU"
             help="Number of CPU to use."/>
         </when>
       </conditional>
@@ -185,4 +186,5 @@
       @REFERENCES@
       ]]>
     </help>
+    <expand macro="citations" />
 </tool>

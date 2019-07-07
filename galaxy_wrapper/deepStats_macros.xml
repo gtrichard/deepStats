@@ -7,4 +7,11 @@
        <requirement type="package" version="0.2">deepstats</requirement>
      </requirements>
    </xml>
+   <xml name="citations">
+       <citations>
+           <citation type="doi">https://github.com/gtrichard/deepStats</citation>
+           <yield />
+       </citations>
+   </xml>
+
 </macros>
