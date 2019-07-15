@@ -4,7 +4,7 @@
         Wilcoxon rank-sum test using deepTools computeMatrix output
     </description>
     <macros>
-        <token name="@BINARY@">dsCompareCurves</token>
+        <token name="@BINARY@">/Users/gtrichard/Documents/Coding/deepStats/bin/dsCompareCurves</token>
         <import>deepStats_macros.xml</import>
     </macros>
     <expand macro="requirements" />
@@ -32,14 +32,20 @@
         #end if
 
         #if $plotOptions.showPlotOptions == "yes":
-          --font '$font_file'
           --bootPlotShareY '$bootPlotShareY'
-          --bootPlotColors '$bootPlotColors'
           --bootPlotRatio '$bootPlotRatio'
           --bootPlotWidth '$bootPlotWidth'
           --bootPlotHeight '$bootPlotHeight'
           --wilcoxPlotWidth '$wilcoxPlotWidth'
           --wilcoxPlotHeight '$wilcoxPlotHeight'
+        #end if
+
+        #if $fontOptions.showFontOptions == "yes":
+          --font '$font_file'
+        #end if
+
+        #if $colorsOptions.showColorsOptions == "yes":
+          --bootPlotColors '$bootPlotColors'
         #end if
 
         #if $advancedOptions.showAdvancedOptions == "yes":
@@ -50,6 +56,9 @@
     <inputs>
       <param argument="--input" format="tabular" type="data"
         label="deepTools computeMatrix output file."/>
+
+      <param argument="--output" type="text" value= "output"
+        label="Output file name"/>
 
       <param argument="--comparison" type="select"
         label="What do you want to compare?">
@@ -121,20 +130,11 @@
         </param>
           <when value="no"/>
           <when value="yes">
-            <param argument="--font" type="file" format="ttf" value=" " label="--font" optional="true"
-              help="Font used for plotting, given a TTF file. Default is usually Helvetica."/>
 
             <param argument="--bootPlotShareY" type="select" label="--bootPlotShareY">
               <option value="TRUE" selected="true">TRUE</option>
               <option value="FALSE">FALSE</option>
             </param>
-
-            <param argument="--bootPlotColors" type="file" format="tabular" value=" " label="--bootPlotColors"
-              help="Change the bootstraps plot color palette to a user-provided one. The file must
-              be tab-delimited and contain for each line two HTML color codes ( #3366CC   #769EF2 ).
-              The first column corresponds to the mean color, the second column corresponds to the
-              color of the bootstrap confidence interval shadowed area. The default color scale
-              contains 6 colors that are color blind friendly using the dichromat R package."/>
 
             <param argument="--bootPlotRatio" type="float" value="0.85" label="--bootPlotRatio"
               help="Changes the aspect ratio of the plot. A value inferior to 1 results in a wide plot,
@@ -154,7 +154,35 @@
           </when>
       </conditional>
 
-      <conditional name="plotOptions">
+      <conditional name="fontOptions">
+            <param name="showFontOptions" type="select" label="Show font options?">
+              <option value="no" selected="true">no</option>
+              <option value="yes">yes</option>
+            </param>
+              <when value="no"/>
+              <when value="yes">
+                <param argument="--font" type="file" format="ttf" value=" " label="--font" optional="true"
+                  help="Font used for plotting, given a TTF file. Default is usually Helvetica."/>
+              </when>
+      </conditional>
+
+      <conditional name="colorsOptions">
+            <param name="showColorsOptions" type="select" label="Show colors options?">
+              <option value="no" selected="true">no</option>
+              <option value="yes">yes</option>
+            </param>
+              <when value="no"/>
+              <when value="yes">
+                <param argument="--bootPlotColors" type="file" format="tabular" value=" " label="--bootPlotColors"
+                  help="Change the bootstraps plot color palette to a user-provided one. The file must
+                  be tab-delimited and contain for each line two HTML color codes ( #3366CC   #769EF2 ).
+                  The first column corresponds to the mean color, the second column corresponds to the
+                  color of the bootstrap confidence interval shadowed area. The default color scale
+                  contains 6 colors that are color blind friendly using the dichromat R package."/>
+              </when>
+      </conditional>
+
+      <conditional name="advancedOptions">
         <param name="showAdvancedOptions" type="select" label="Show advanced options?">
           <option value="no" selected="true">no</option>
           <option value="yes">yes</option>

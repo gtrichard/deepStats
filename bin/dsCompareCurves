@@ -217,14 +217,15 @@ if ( is.null(opt$regionLabels)==FALSE ) {
 #### LINEBREAKS FOR LONG LEGENDS ####
 
 for (i in 1:length(metadata$group_names)){
-  if(nchar(metadata$group_names[[i]]) >=21 ){
-    metadata$group_names[[i]] <- paste(strwrap(metadata$group_names[[i]],width = 20), collapse="\n")
+nchar(metadata$group_names[[i]])
+  if(nchar(metadata$group_names[[i]]) >20 ){
+    metadata$group_names[[i]] <- gsub('(.{20})', "\\1\n", metadata$group_names[[i]], perl = TRUE)
   }
 }
 
 for (i in 1:length(metadata$scores)){
-  if(nchar(metadata$scores[[i]]) >=21 ){
-    metadata$scores[[i]] <- paste(strwrap(metadata$scores[[i]],width = 20), collapse="\n")
+  if(nchar(metadata$scores[[i]]) >20 ){
+    metadata$scores[[i]] <- gsub('(.{20})', "\\1\n", metadata$scores[[i]], perl = TRUE)
   }
 }
 
@@ -633,15 +634,13 @@ for (group in 1:length(metadata$group_names)){ # One plot per region
 bootstraps_to_plot<-do.call("rbind", boot_plot_data)
 rm(boot_plot_data)
 
-opt$bootPlotShareY=FALSE
-
 make_boot_plot<-function(x,type){
 
-  if(is.null(opt$bootPlotShareY)){
-    ratio <- with(x, diff(range(x$Bin))*opt$bootPlotRatio/diff(c(min(x$Min), max(x$Max))))
+  if(opt$bootPlotShareY==FALSE){
+    ratio <- with(x, diff(range(x$Bin))/diff(c(min(x$Min), max(x$Max)))*as.numeric(opt$bootPlotRatio))
 
   }else{
-    ratio <- with(bootstraps_to_plot, diff(range(bootstraps_to_plot$Bin))*opt$bootPlotRatio /
+    ratio <- with(bootstraps_to_plot, diff(range(bootstraps_to_plot$Bin))*as.numeric(opt$bootPlotRatio) /
                     diff(c(min(bootstraps_to_plot$Min), max(bootstraps_to_plot$Max) )))
   }
 
@@ -651,7 +650,7 @@ make_boot_plot<-function(x,type){
     scale_color_manual( legend_title, values = color_palette )+
     scale_fill_manual( legend_title, values = fill_palette )+
     scale_x_continuous( NULL , breaks=xaxis$breaks, labels=xaxis$names )+
-    {if(is.null(opt$bootPlotShareY)==FALSE) ylim(min(bootstraps_to_plot$Min),max(bootstraps_to_plot$Max))}+
+    {if(opt$bootPlotShareY==TRUE) ylim(min(bootstraps_to_plot$Min),max(bootstraps_to_plot$Max))}+
     ylab( opt$signalName )+
     panel_border( size=1, remove=FALSE )+
     coord_fixed(ratio=ratio)+
