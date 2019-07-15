@@ -1,4 +1,4 @@
-[![install with bioconda](https://img.shields.io/badge/install%20with-bioconda-brightgreen.svg?style=flat)](http://bioconda.github.io/recipes/deepstats/README.html) ![](https://anaconda.org/bioconda/deepstats/badges/version.svg) ![](https://anaconda.org/bioconda/deepstats/badges/latest_release_date.svg) 
+[![install with bioconda](https://img.shields.io/badge/install%20with-bioconda-brightgreen.svg?style=flat)](http://bioconda.github.io/recipes/deepstats/README.html) ![](https://anaconda.org/bioconda/deepstats/badges/version.svg) ![](https://anaconda.org/bioconda/deepstats/badges/latest_release_date.svg) ![](https://img.shields.io/badge/lifecycle-experimental-orange.svg)
 
 ![](docs/images/deepStats_logo.png?raw=true "Title")
 
