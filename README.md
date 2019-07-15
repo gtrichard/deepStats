@@ -6,6 +6,11 @@
 
 **This is currently a Work In Progress**
 
+## Citation
+
+If you use deepStats in your work, please cite this repository using the DOI from the following link:
+https://zenodo.org/badge/latestdoi/189997890
+
 ## Installation
 
 - **As a command-line tool through Conda**
