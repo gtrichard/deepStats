@@ -9,7 +9,7 @@
    </xml>
    <xml name="citations">
        <citations>
-           <citation type="doi">https://github.com/gtrichard/deepStats</citation>
+           <citation type="doi">10.5281/zenodo.3336594</citation>
            <yield />
        </citations>
    </xml>
