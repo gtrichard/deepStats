@@ -4,7 +4,7 @@
         Wilcoxon rank-sum test using deepTools computeMatrix output
     </description>
     <macros>
-        <token name="@BINARY@">/Users/gtrichard/Documents/Coding/deepStats/bin/dsCompareCurves</token>
+        <token name="@BINARY@">dsCompareCurves</token>
         <import>deepStats_macros.xml</import>
     </macros>
     <expand macro="requirements" />
