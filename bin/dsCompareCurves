@@ -31,12 +31,16 @@ option_list = list(
                perform is otherwise automatically detected.", metavar="character" ),
 
   make_option( c( "--scoreLabels" ), type="character", default=NULL,
-               help="Names of the scores. It must be provided as text seperated by semi-colons, i.e.
-               'Score A; Score B; Score C'.", metavar="character" ),
+               help="Names of the scores to be displayed on the plots. It must be provided as text seperated by semi-colons, i.e.
+               'Score A;Score B;Score C'.", metavar="character" ),
 
   make_option( c( "--regionLabels" ), type="character", default=NULL,
-               help="Names of the regions. It must be provided as text seperated by semi-colons, i.e.
+               help="Names of the regions to be displayed on the plots. It must be provided as text seperated by semi-colons, i.e.
                'Regions A; Regions B; Regions C'.", metavar="character" ),
+
+  make_option( c( "--signalName" ), type="character", default="Genomic signal",
+               help="Name given to the signal, for instance 'H3K4me3 log2input'.
+               Default: 'Genomic signal'", metavar="character" ),
 
   make_option( c( "--bootstraps", "-b" ), type="integer", default=1000,
                help="Number of bootstraps to perform. Default: 1000.", metavar="integer" ),
@@ -61,16 +65,16 @@ option_list = list(
                help="Threshold used to define significant bins on the Wilcoxon rank-sum
                test plot. Default: 0.05", metavar="numeric" ),
 
-  make_option( c( "--signalName" ), type="character", default="Genomic signal",
-               help="Name given to the signal, for instance 'H3K4me3 log2input'.
-               Default: 'Genomic signal'", metavar="character" ),
-
   make_option( c( "--firstRegionName" ), type="character", default="TSS",
                help="Name of the central or left region. Default: TSS", metavar="character" ),
 
   make_option( c( "--secondRegionName" ), type="character", default="TES",
                help="Name of the right region, only used when deeptools computeMatrix
                ran in scaled-regions mode. Default: TES", metavar="character" ),
+
+  make_option( c( "--bootPlotShareY" ), type="character", default="TRUE",
+               help="Given TRUE or FALSE, defines if the bootstraps plots should
+               share the same scale on the y axis or not. Default: TRUE", metavar="character" ),
 
   make_option( c( "--bootPlotColors" ), type="character", default=NULL,
                help="Change the bootstraps plot color palette to a user-provided one. The file must
@@ -97,7 +101,7 @@ option_list = list(
 
   make_option( c( "--font" ), type="character", default=NULL,
                help="Font used for plotting, given a TTF file. Default is usually Helvetica.", metavar="character" )
-               );
+);
 
 opt_parser = OptionParser( description= "
                            This tool assesses if multiple genomics signals ( ChIP-seq, ATAC-seq... ) are significantly different or
@@ -107,10 +111,6 @@ opt_parser = OptionParser( description= "
                            tab-delimited table will be produced for each set of regions.",
                            usage = "dsCompareCurves --input file.txt --output results", option_list=option_list );
 opt = parse_args( opt_parser );
-
-
-
-
 
 if ( is.null( opt$input ) ) {
   print_help( opt_parser )
@@ -137,6 +137,15 @@ opt$input <- normalizePath( opt$input )
 opt$output <- paste( normalizePath( dirname( opt$output ) ),"/",basename( opt$output ),sep="" )
 setwd( normalizePath( dirname( opt$output ) ) )
 
+#### REMOVE BAD LABELS ####
+
+if ( opt$scoreLabels=="" ) {
+  opt$scoreLabels <- NULL
+}
+
+if ( opt$regionLabels=="" ) {
+  opt$regionLabels <- NULL
+}
 
 #### METADATA EXTRACTION ####
 
@@ -208,6 +217,21 @@ if ( is.null(opt$scoreLabels)==FALSE ) {
 
 if ( is.null(opt$regionLabels)==FALSE ) {
   metadata$group_names <- unlist(str_split(opt$regionLabels,";"))
+}
+
+#### LINEBREAKS FOR LONG LEGENDS ####
+
+for (i in 1:length(metadata$group_names)){
+  nchar(metadata$group_names[[i]])
+  if(nchar(metadata$group_names[[i]]) >20 ){
+    metadata$group_names[[i]] <- gsub('(.{20})', "\\1\n", metadata$group_names[[i]], perl = TRUE)
+  }
+}
+
+for (i in 1:length(metadata$scores)){
+  if(nchar(metadata$scores[[i]]) >20 ){
+    metadata$scores[[i]] <- gsub('(.{20})', "\\1\n", metadata$scores[[i]], perl = TRUE)
+  }
 }
 
 #### GLOBAL FLAG DETERMINATION FOR COMPARISON ####
@@ -326,33 +350,33 @@ if ( mode=="deeptools" ) {
 
 if ( mode=="deeptools" ) {
 
-#currently not implemented but it doesn't hurt to keep.
+  #currently not implemented but it doesn't hurt to keep.
 
-   if ( is.null( opt$wilcoxStartBin )==TRUE && is.null( opt$wilcoxEndBin )==FALSE ) {
-     print_help( opt_parser )
-     stop( "Both --wilcoxStartBin and --wilcoxEndBin must be given.", call.=FALSE )
-   }
+  if ( is.null( opt$wilcoxStartBin )==TRUE && is.null( opt$wilcoxEndBin )==FALSE ) {
+    print_help( opt_parser )
+    stop( "Both --wilcoxStartBin and --wilcoxEndBin must be given.", call.=FALSE )
+  }
 
-   if ( is.null( opt$wilcoxStartBin )==FALSE && is.null( opt$wilcoxEndBin )==TRUE ) {
-     print_help( opt_parser )
-     stop( "Both --wilcoxStartBin and --wilcoxEndBin must be given.", call.=FALSE )
-   }
+  if ( is.null( opt$wilcoxStartBin )==FALSE && is.null( opt$wilcoxEndBin )==TRUE ) {
+    print_help( opt_parser )
+    stop( "Both --wilcoxStartBin and --wilcoxEndBin must be given.", call.=FALSE )
+  }
 
-   if ( is.null( opt$wilcoxStartBin )==FALSE && is.null( opt$wilcoxEndBin )==FALSE ) {
-     if ( opt$wilcoxStartBin > opt$wilcoxEndBin ) {
-       print_help( opt_parser )
-       stop( "--wilcoxStartBin must be superior to --wilcoxEndBin.", call.=FALSE )
-     }
-     if ( opt$wilcoxStartBin > opt$wilcoxEndBin ) {
-       cat( as.character( Sys.time() ), "Starting Wilcoxon rank-sum test on the following bins: from",opt$wilcoxStartBin,
-            "to",opt$wilcoxEndBin, "\n" )
-       wilcox_df <- dat[,opt$wilcoxStartBin:opt$wilcoxEndBin]
-       #wilcox_dfs <- lapply( bootstrap_dfs, function( x ) {x[which( x$Bin >= opt$wilcoxStartBin & x$Bin <= opt$wilcoxEndBin  ),]} )
-     }
-   }else{
-     cat( as.character( Sys.time() ), "Starting Wilcoxon rank-sum test.\n" )
-     wilcox_df <- dat
-   }
+  if ( is.null( opt$wilcoxStartBin )==FALSE && is.null( opt$wilcoxEndBin )==FALSE ) {
+    if ( opt$wilcoxStartBin > opt$wilcoxEndBin ) {
+      print_help( opt_parser )
+      stop( "--wilcoxStartBin must be superior to --wilcoxEndBin.", call.=FALSE )
+    }
+    if ( opt$wilcoxStartBin > opt$wilcoxEndBin ) {
+      cat( as.character( Sys.time() ), "Starting Wilcoxon rank-sum test on the following bins: from",opt$wilcoxStartBin,
+           "to",opt$wilcoxEndBin, "\n" )
+      wilcox_df <- dat[,opt$wilcoxStartBin:opt$wilcoxEndBin]
+      #wilcox_dfs <- lapply( bootstrap_dfs, function( x ) {x[which( x$Bin >= opt$wilcoxStartBin & x$Bin <= opt$wilcoxEndBin  ),]} )
+    }
+  }else{
+    cat( as.character( Sys.time() ), "Starting Wilcoxon rank-sum test.\n" )
+    wilcox_df <- dat
+  }
 
   if (global_flag=="compare_regions") {
 
@@ -615,15 +639,13 @@ for (group in 1:length(metadata$group_names)){ # One plot per region
 bootstraps_to_plot<-do.call("rbind", boot_plot_data)
 rm(boot_plot_data)
 
-opt$bootPlotShareY=FALSE
-
 make_boot_plot<-function(x,type){
 
-  if(is.null(opt$bootPlotShareY)){
-    ratio <- with(x, diff(range(x$Bin))*opt$bootPlotRatio/diff(c(min(x$Min), max(x$Max))))
+  if(opt$bootPlotShareY==FALSE){
+    ratio <- with(x, diff(range(x$Bin))/diff(c(min(x$Min), max(x$Max)))*as.numeric(opt$bootPlotRatio))
 
   }else{
-    ratio <- with(bootstraps_to_plot, diff(range(bootstraps_to_plot$Bin))*opt$bootPlotRatio /
+    ratio <- with(bootstraps_to_plot, diff(range(bootstraps_to_plot$Bin))*as.numeric(opt$bootPlotRatio) /
                     diff(c(min(bootstraps_to_plot$Min), max(bootstraps_to_plot$Max) )))
   }
 
@@ -633,22 +655,29 @@ make_boot_plot<-function(x,type){
     scale_color_manual( legend_title, values = color_palette )+
     scale_fill_manual( legend_title, values = fill_palette )+
     scale_x_continuous( NULL , breaks=xaxis$breaks, labels=xaxis$names )+
-    {if(is.null(opt$bootPlotShareY)==FALSE) ylim(min(bootstraps_to_plot$Min),max(bootstraps_to_plot$Max))}+
+    {if(opt$bootPlotShareY==TRUE) ylim(min(bootstraps_to_plot$Min),max(bootstraps_to_plot$Max))}+
     ylab( opt$signalName )+
     panel_border( size=1, remove=FALSE )+
     coord_fixed(ratio=ratio)+
     theme( axis.text.y = element_text( size = 12, color = "#383838" ),
            axis.text.x = element_text( size = 12,  color = "#383838" ),
+           axis.title.y = element_text( size = 13 ),
            axis.title.x = element_text( size = 13 ),
-           plot.title = element_text( size = 13, face = "plain" ),
+           plot.title = element_text( size = 13, face = "plain", hjust = 0.5, vjust=0.5),
            legend.title = element_text( size = 12, color = "#383838" ),
+           legend.text = element_text( size = 12, color = "black" ),
            line = element_line( size=1 ),
            strip.placement = "outside",
            strip.background = element_blank(),
-           plot.background = element_rect( colour = "black" ),
+           plot.background = element_blank(),
            panel.border = element_rect( colour = "black" ),
            axis.line = element_blank(),
-           panel.spacing = unit( 1, "line" ) )
+           panel.spacing = unit( 1, "line" ),
+           panel.grid = element_blank(),
+           panel.background = element_blank(),
+           axis.ticks        = element_line(color = "black", size = 0.6),
+           axis.ticks.length = unit( 3, "pt")
+           )
 }
 
 boot_plot_list <- list()
@@ -710,8 +739,6 @@ make_wilcox_plot<-function(x){
   rec_start<-as.numeric( xaxis$xaxis_start[[1]] )
   rec_end<-as.numeric( xaxis$xaxis_end[[1]] )
 
-  full <- do.call(rbind,wilcox_to_plot)
-
   ratio <- with(x, diff(range(full$xaxis))/diff(range(full$vals)))
 
   ggplot( x,aes( x=x$xaxis,y=x$vals ) )+
@@ -726,22 +753,26 @@ make_wilcox_plot<-function(x){
     theme( axis.text = element_text( size=11 ),
            axis.text.y = element_text( size=10 ),
            axis.text.x = element_text( size=10,angle=50,hjust=1,vjust=1 ),
-           plot.title = element_text( size = 13, face = "plain" ),
+           plot.title = element_text( size = 13, face = "plain", hjust = 0.5, vjust=0.5),
            line = element_line( size=1 ),
            strip.placement = "outside",
            strip.background = element_blank(),
-           plot.background = element_rect( colour = "black" ),
+           plot.background = element_blank(),
            panel.border = element_rect( colour = "black" ),
            axis.line = element_blank(),
-           panel.spacing = unit( 1,"line" ) )
-
+           panel.spacing = unit( 1,"line" ),
+           panel.grid = element_blank(),
+           panel.background = element_blank(),
+           axis.ticks        = element_line(color = "black", size = 0.6),
+           axis.ticks.length = unit( 3, "pt")
+           )
 }
 
 wilcox_plot_list <- list()
 
 if(global_flag == "compare_scores") {
   wilcox_to_plot <- master_list[[1]]$wilcoxon
-
+  full <- do.call(rbind,wilcox_to_plot)
   for (i in 1:length(wilcox_to_plot)) {
     wilcox_plot_list[[i]] <- make_wilcox_plot(wilcox_to_plot[[i]]) + ggtitle(unique(wilcox_to_plot[[i]]$Constant))
     if ( is.null( opt$font )==FALSE ) {
@@ -754,7 +785,8 @@ if(global_flag == "compare_scores") {
 
 if(global_flag == "compare_regions") {
   for (score in 1:length(master_list)){
-    wilcox_to_plot<-do.call(rbind,master_list[[score]]$wilcoxon)
+    wilcox_to_plot<-Reduce(rbind,master_list[[score]]$wilcoxon)
+    full <- wilcox_to_plot
     wilcox_plot_list[[score]] <- make_wilcox_plot(wilcox_to_plot) + ggtitle(unique(wilcox_to_plot$Constant))
     if ( is.null( opt$font )==FALSE ) {
       font_add( family = "plot_font", regular = opt$font )

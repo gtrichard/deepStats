@@ -1,8 +1,10 @@
-![Alt text](docs/images/deepStats_logo.png?raw=true "Title")
+[![install with bioconda](https://img.shields.io/badge/install%20with-bioconda-brightgreen.svg?style=flat)](http://bioconda.github.io/recipes/deepstats/README.html) ![](https://anaconda.org/bioconda/deepstats/badges/version.svg) ![](https://anaconda.org/bioconda/deepstats/badges/latest_release_date.svg) ![](https://img.shields.io/badge/lifecycle-experimental-orange.svg)
 
-**deepStats is a statistical and dataviz toolbox for deeptools, genomic signals, and more (GOterms, etc).**
+![](docs/images/deepStats_logo.png?raw=true "Title")
 
-/!\ **This is currently a Work In Progress** /!\ 
+**deepStats v0.3 is a statistical and dataviz toolbox for deeptools, genomic signals, and more (GOterms, etc).**
+
+/!\ **This is currently a Work In Progress** /!\
 
 ## Installation
 
@@ -14,7 +16,7 @@ conda create -c bioconda -c conda-forge -n deepStats python=3.7 deepStats
 conda activate deepStats
 ```
 
-- **As R Notebooks** (currently not up-to-date, please use conda).
+- **As R Notebooks**
 
 Install the following packages in your R environment:
 ```
