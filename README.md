@@ -41,7 +41,8 @@ git clone https://github.com/gtrichard/deepStats
 
 - **As Galaxy wrappers**
 
-Not yet available.
+You can install deepStats in a Galaxy instance through the Tool Shed:
+https://toolshed.g2.bx.psu.edu/view/gtrichard/deepstats_dscomparecurves/cbeae0f83ff8
 
 ## Tools
 
