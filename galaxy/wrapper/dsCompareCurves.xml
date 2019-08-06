@@ -1,7 +1,6 @@
 <tool id="deepstats_compare_curves" name="dsCompareCurves" version="@WRAPPER_VERSION@.0" profile="18.01">
     <description>
-        compares multiple bigwigs over multiple region sets with bootstraps and
-        Wilcoxon rank-sum test using deepTools computeMatrix output
+        compares multiple genomic scores at multiple regions sets by bootstraps and per-bin distribution test
     </description>
     <macros>
         <token name="@BINARY@">dsCompareCurves</token>
@@ -180,13 +179,44 @@
     </tests>
     <help>
       <![CDATA[
-      This tool assesses if multiple genomics signals ( ChIP-seq, ATAC-seq... ) are significantly different or
-      not between conditions ( control, KO1, KO2, etc ). `dsCompareCurves` uses bootstraps and corrected
-      Wilcoxon Rank-sum tests to do so. The input of this tool corresponds to the output of deepTools
-      `computeMatrix --outFileNameMatrix`. If multiple region sets have been used in deepTools, one plot and
-      tab-delimited table will be produced for each set of regions.
 
-      @REFERENCES@
+      .. image:: $PATH_TO_IMAGES/deepStats_logo.png
+         :scale: 20 %
+
+      Comparing multiple genomic scores at multiple regions sets
+      ==========================================================
+
+      **dsCompareCurves** assesses if multiple genomics signals ( ChIP-seq, ATAC-seq, etc as bigwig) are significantly different or not for multiple region sets (bed file). ``dsCompareCurves`` uses bootstraps and corrected Wilcoxon Rank-sum tests to do so. This tool uses the output of deepTools ``computeMatrix --outFileNameMatrix``, that thus must be used prior to ``dsCompareCurves``. Eitherway the regions are compared for each signal, or all the signals are compared for each region set.
+
+      _________________
+
+      Citation
+      --------
+
+      More information are available here: @REFERENCES@
+      To cite that tool, please get the citation from that page: https://doi.org/10.5281/zenodo.3336593
+
+      _________________
+
+      Example usage
+      -------------
+
+      Below you can find an example of regions comparison.
+
+      We consider two set of regions, conserved genes, and unconserved genes in Drosophila melanogaster. The want to know which histone marks from modENCODE are differentially enriched between these two regions sets.
+
+      Prior to ``dsCompareCurves``, we used **deepTools** ``computeMatrix scale-regions`` with the two bed files as regions, and the three histone marks bigwig tracks as scores. We also added the optional parameter ``outFileNameMatrix`` in order to get the output as a tab-delimited file (.txt).
+
+      The latter file is then used as input for the present tool in "regions", in order to compare the conserved and unconserved genes for each one of the three histone marks. Below you can find an image describing the output using the said data set and the galaxy parameters used:
+
+      **Galaxy parameters**
+
+      .. image:: $PATH_TO_IMAGES/dsCompareCurves_galaxy_parameters.png
+
+      **Output description**
+
+      .. image:: $PATH_TO_IMAGES/dsCompareCurves_doc.png
+
       ]]>
     </help>
     <expand macro="citations" />
