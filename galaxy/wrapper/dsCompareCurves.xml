@@ -213,7 +213,7 @@ The latter file is then used as input for the present tool in "regions", in orde
 Galaxy parameters
 +++++++++++++++++
 
-.. image:: https://raw.githubusercontent.com/gtrichard/deepStats/galaxy_doc/docs/images/dsCompareCurves_galaxy.png
+.. image:: https://raw.githubusercontent.com/gtrichard/deepStats/master/docs/images/dsCompareCurves_galaxy.png
    :width: 800
 
 :raw-html:`<br />`
@@ -221,7 +221,7 @@ Galaxy parameters
 Output description
 ++++++++++++++++++
 
-.. image:: https://raw.githubusercontent.com/gtrichard/deepStats/galaxy_doc/docs/images/dsCompareCurves_doc.png
+.. image:: https://raw.githubusercontent.com/gtrichard/deepStats/master/docs/images/dsCompareCurves_doc.png
    :width: 800
 
       ]]></help>
