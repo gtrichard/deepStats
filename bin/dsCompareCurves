@@ -739,7 +739,7 @@ make_wilcox_plot<-function(x){
   rec_start<-as.numeric( xaxis$xaxis_start[[1]] )
   rec_end<-as.numeric( xaxis$xaxis_end[[1]] )
 
-  ratio <- with(x, diff(range(full$xaxis))/diff(range(full$vals)))
+  ratio <- with(x, diff(range(full$xaxis))/diff(c(min(full$vals),max(full$vals, -log10( opt$wilcoxThreshold )))))
 
   ggplot( x,aes( x=x$xaxis,y=x$vals ) )+
     geom_rect( aes( xmin = rec_start, xmax = rec_end, ymin = -0.1, ymax =-log10( opt$wilcoxThreshold ) ), fill = "#CECECE" ) +
@@ -747,7 +747,7 @@ make_wilcox_plot<-function(x){
     facet_grid( Group1 ~ Group2 )+
     coord_fixed(ratio=ratio)+
     scale_x_continuous( "Genomic position",breaks=xaxis$breaks,labels=xaxis$names )+
-    ylim(-0.1,max(full$vals))+
+    ylim(-0.1, max(full$vals, -log10( opt$wilcoxThreshold )))+
     ylab( "-log10( Bonferroni corrected \n Wilcoxon rank-sum p-value )" )+
     panel_border( size=1,remove=FALSE )+
     theme( axis.text = element_text( size=11 ),
