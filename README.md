@@ -2,14 +2,14 @@
 
 ![](docs/images/deepStats_logo.png?raw=true "Title")
 
-**deepStats v0.3 is a statistical and dataviz toolbox for deeptools, genomic signals, and more (GOterms, etc).**
+**deepStats 0.3.1 is a statistical and dataviz toolbox for deeptools, genomic signals, and more (GOterms, etc).**
 
 **This is currently a Work In Progress**
 
 ## Citation
 
 If you use deepStats in your work, please cite this repository using the DOI from the following link:
-https://zenodo.org/badge/latestdoi/189997890
+https://doi.org/10.5281/zenodo.3336593
 
 ## Installation
 
@@ -22,6 +22,8 @@ conda activate deepStats
 ```
 
 - **As R Notebooks**
+
+Currently, R notebooks are not up-to-date.
 
 Install the following packages in your R environment:
 ```
@@ -41,10 +43,11 @@ git clone https://github.com/gtrichard/deepStats
 
 - **As Galaxy wrappers**
 
-You can install deepStats in a Galaxy instance through the Tool Shed:
-https://toolshed.g2.bx.psu.edu/view/gtrichard/deepstats_dscomparecurves/cbeae0f83ff8
+You can install deepStats in a Galaxy instance through the `Galaxy Tool Shed <https://toolshed.g2.bx.psu.edu/repository/manage_repository?sort=name&operation=view_or_manage_repository&f-free-text-search=deepstats&id=4125c47ee1118a75>`_
 
 ## Tools
+
+The tools complete description are available on the Wiki: https://github.com/gtrichard/deepStats/wiki
 
 - **dsCompareCurves**
 

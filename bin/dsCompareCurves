@@ -104,7 +104,7 @@ option_list = list(
 );
 
 opt_parser = OptionParser( description= "
-                           This tool assesses if multiple genomics signals ( ChIP-seq, ATAC-seq... ) are significantly different or
+                           dsCompareCurves 0.3.1 assesses if multiple genomics signals ( ChIP-seq, ATAC-seq... ) are significantly different or
                            not between conditions ( control, KO1, KO2, etc ). `dsCompareCurves` uses bootstraps and corrected
                            Wilcoxon Rank-sum tests to do so. The input of this tool corresponds to the output of deepTools
                            `computeMatrix --outFileNameMatrix`. If multiple region sets have been used in deepTools, one plot and

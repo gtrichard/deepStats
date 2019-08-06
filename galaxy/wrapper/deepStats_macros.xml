@@ -1,10 +1,10 @@
 <macros>
    <token name="@THREADS@">--CPU "\${GALAXY_SLOTS:-4}"</token>
-   <token name="@WRAPPER_VERSION@">1.0.0</token>
+   <token name="@WRAPPER_VERSION@">1.1.0</token>
    <token name="@REFERENCES@">https://github.com/gtrichard/deepStats</token>
    <xml name="requirements">
      <requirements>
-       <requirement type="package" version="0.3">deepstats</requirement>
+       <requirement type="package" version="0.3.1">deepstats</requirement>
      </requirements>
    </xml>
    <xml name="citations">

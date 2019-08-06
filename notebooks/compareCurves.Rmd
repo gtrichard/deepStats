@@ -1,9 +1,9 @@
 ---
-title: "deepStats - compareCurves"
+title: "deepStats - compareCurves 0.2"
 output: html_notebook
 ---
 
-/!\ This Notebook is not yet updated /!\
+THIS NOTEBOOK IS NOT UP TO DATE YET
 
 This tool assesses if multiple genomics signals ( ChIP-seq, ATAC-seq... ) are significantly different or
 not between conditions ( control, KO1, KO2, etc ). DeepStats compareCurves uses bootstraps and corrected
