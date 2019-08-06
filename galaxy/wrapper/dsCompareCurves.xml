@@ -207,14 +207,13 @@ We consider two set of regions, conserved genes, and unconserved genes in Drosop
 
 Prior to ``dsCompareCurves``, we used **deepTools** ``computeMatrix scale-regions`` with the two bed files as regions, and the three histone marks bigwig tracks as scores. We also added the optional parameter ``outFileNameMatrix`` in order to get the output as a tab-delimited file (.txt).
 
-The latter file is then used as input for the present tool in "regions", in order to compare the conserved and unconserved genes for each one of the three histone marks. Below you can find an image describing the output using the said data set and the galaxy parameters used:
-:raw-html:`<br />`
+The latter file is then used as input for the present tool in "regions", in order to compare the conserved and unconserved genes for each one of the three histone marks. You can find an image describing the output below using the said data set and the following galaxy parameters:
 
-Galaxy parameters
-+++++++++++++++++
+.. class:: bold
 
-.. image:: https://raw.githubusercontent.com/gtrichard/deepStats/master/docs/images/dsCompareCurves_galaxy.png
-   :width: 800
+`Example parameters`_
+
+.. _Example parameters: https://raw.githubusercontent.com/gtrichard/deepStats/master/docs/images/dsCompareCurves_galaxy.png
 
 :raw-html:`<br />`
 
