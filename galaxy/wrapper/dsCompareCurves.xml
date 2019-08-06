@@ -177,47 +177,53 @@
       <test>
       </test>
     </tests>
-    <help>
-      <![CDATA[
+    <help><![CDATA[
 
-      .. image:: $PATH_TO_IMAGES/deepStats_logo.png
-         :scale: 20 %
+.. role:: raw-html(raw)
+   :format: html
 
-      Comparing multiple genomic scores at multiple regions sets
-      ==========================================================
+.. image:: https://raw.githubusercontent.com/gtrichard/deepStats/master/docs/images/deepStats_logo.png
+   :width: 400
 
-      **dsCompareCurves** assesses if multiple genomics signals ( ChIP-seq, ATAC-seq, etc as bigwig) are significantly different or not for multiple region sets (bed file). ``dsCompareCurves`` uses bootstraps and corrected Wilcoxon Rank-sum tests to do so. This tool uses the output of deepTools ``computeMatrix --outFileNameMatrix``, that thus must be used prior to ``dsCompareCurves``. Eitherway the regions are compared for each signal, or all the signals are compared for each region set.
+:raw-html:`<br />`
 
-      _________________
+dsCompareCurves: Comparing multiple genomic scores at multiple regions sets
+===========================================================================
 
-      Citation
-      --------
 
-      More information are available here: @REFERENCES@
-      To cite that tool, please get the citation from that page: https://doi.org/10.5281/zenodo.3336593
+**dsCompareCurves** assesses if multiple genomics signals (ChIP-seq, ATAC-seq, etc as .bigwig files) are significantly different or not for multiple region sets (.bed files). ``dsCompareCurves`` uses bootstraps and corrected Wilcoxon Rank-sum tests to do so. This tool uses the output of deepTools ``computeMatrix --outFileNameMatrix``, that thus must be used prior to ``dsCompareCurves``. Eitherway the regions are compared for each signal (``--comparison regions``), or all the signals are compared for each region set (``--comparison scores``).
 
-      _________________
 
-      Example usage
-      -------------
+_______________
 
-      Below you can find an example of regions comparison.
 
-      We consider two set of regions, conserved genes, and unconserved genes in Drosophila melanogaster. The want to know which histone marks from modENCODE are differentially enriched between these two regions sets.
+Example usage
+-------------
 
-      Prior to ``dsCompareCurves``, we used **deepTools** ``computeMatrix scale-regions`` with the two bed files as regions, and the three histone marks bigwig tracks as scores. We also added the optional parameter ``outFileNameMatrix`` in order to get the output as a tab-delimited file (.txt).
 
-      The latter file is then used as input for the present tool in "regions", in order to compare the conserved and unconserved genes for each one of the three histone marks. Below you can find an image describing the output using the said data set and the galaxy parameters used:
+Below you can find an example of regions comparison.
 
-      **Galaxy parameters**
+We consider two set of regions, conserved genes, and unconserved genes in Drosophila melanogaster. The want to know which histone marks from modENCODE are differentially enriched between these two regions sets.
 
-      .. image:: $PATH_TO_IMAGES/dsCompareCurves_galaxy_parameters.png
+Prior to ``dsCompareCurves``, we used **deepTools** ``computeMatrix scale-regions`` with the two bed files as regions, and the three histone marks bigwig tracks as scores. We also added the optional parameter ``outFileNameMatrix`` in order to get the output as a tab-delimited file (.txt).
 
-      **Output description**
+The latter file is then used as input for the present tool in "regions", in order to compare the conserved and unconserved genes for each one of the three histone marks. Below you can find an image describing the output using the said data set and the galaxy parameters used:
+:raw-html:`<br />`
 
-      .. image:: $PATH_TO_IMAGES/dsCompareCurves_doc.png
+Galaxy parameters
++++++++++++++++++
 
-      ]]>
-    </help>
+.. image:: https://raw.githubusercontent.com/gtrichard/deepStats/galaxy_doc/docs/images/dsCompareCurves_galaxy.png
+   :width: 800
+
+:raw-html:`<br />`
+
+Output description
+++++++++++++++++++
+
+.. image:: https://raw.githubusercontent.com/gtrichard/deepStats/galaxy_doc/docs/images/dsCompareCurves_doc.png
+   :width: 800
+
+      ]]></help>
     <expand macro="citations" />
 </tool>
