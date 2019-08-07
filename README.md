@@ -45,7 +45,7 @@ git clone https://github.com/gtrichard/deepStats
 
 - **As Galaxy wrappers**
 
-You can install deepStats in a Galaxy instance through the `Galaxy Tool Shed <https://toolshed.g2.bx.psu.edu/repository/manage_repository?sort=name&operation=view_or_manage_repository&f-free-text-search=deepstats&id=4125c47ee1118a75>`_
+You can install deepStats in a Galaxy instance through the [Galaxy Tool Shed](https://toolshed.g2.bx.psu.edu/repository/manage_repository?sort=name&operation=view_or_manage_repository&f-free-text-search=deepstats&id=4125c47ee1118a75)
 
 ## The tools
 
