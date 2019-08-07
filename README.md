@@ -46,22 +46,14 @@ git clone https://github.com/gtrichard/deepStats
 
 You can install deepStats in a Galaxy instance through the `Galaxy Tool Shed <https://toolshed.g2.bx.psu.edu/repository/manage_repository?sort=name&operation=view_or_manage_repository&f-free-text-search=deepstats&id=4125c47ee1118a75>`_
 
-## Tools
+## The tools
+
+Below are quickly presented the available tools. Click on their name to access their respective documentation, or check the Wiki:
+https://github.com/gtrichard/deepStats/wiki
+
+| Tool name         | Description                                          |
+| ----------------- | ---------------------------------------------------- |
+| [dsCompareCurves] | compares multiple genomic scores at multiple regions sets by bootstraps and per-bin distribution test |
+
 
 The tools complete description are available on the Wiki: https://github.com/gtrichard/deepStats/wiki
-
-- **dsCompareCurves**
-
-Compares the curves derived from multiple genomic signals and region sets by using bootstrapping and Wilcoxon rank-sum tests in order to identify significantly different loci (bins). It uses `deeptools reference-point computeMatrix --outFileNameMatrix matrix.txt` (can be `reference-point` or `scaled-region`) as an input file. `dsCompareCurves --help` will give you all required information to use the tool. For further documentation about deepTools and how to generate the input file, please refer to: https://deeptools.readthedocs.io/en/develop/content/tools/computeMatrix.html.
-
-- **dsCompareValues**
-
-Not yet available (next planned).
-
-- **dsCompareToRandom**
-
-Not yet available.
-
-- **dsGOCloudMap**
-
-Not yet available.
