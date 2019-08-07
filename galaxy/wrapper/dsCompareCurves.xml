@@ -190,8 +190,15 @@
 dsCompareCurves: Comparing multiple genomic scores at multiple regions sets
 ===========================================================================
 
+**deepStats** aims at providing statistical analyses and streamlining the production of high quality, color-blind friendly, and fully customisable plots (up to the fonts!) for your classic genomic datasets (.bed, .bigwig, gene lists). The goal of deepStats is thus to significantly decrease the amount of time spent in Inkscape/Illustrator to get publication ready plots, and decreasing the research time alloted to finding proper statistical analyses for your genomic signals and datasets.
 
-**dsCompareCurves** assesses if multiple genomics signals (ChIP-seq, ATAC-seq, etc as .bigwig files) are significantly different or not for multiple region sets (.bed files). ``dsCompareCurves`` uses bootstraps and corrected Wilcoxon Rank-sum tests to do so. This tool uses the output of deepTools ``computeMatrix --outFileNameMatrix``, that thus must be used prior to ``dsCompareCurves``. Eitherway the regions are compared for each signal (``--comparison regions``), or all the signals are compared for each region set (``--comparison scores``).
+``dsCompareCurves`` assesses if multiple genomics signals (ChIP-seq, ATAC-seq, etc as .bigwig files) are significantly different or not for multiple region sets (.bed files), and specifically on which bins. ``dsCompareCurves`` uses two methods to do so: bootstraps and per-bin Bonferroni corrected Wilcoxon Rank-sum tests. The input for ``dsCompareCurves`` comes from deepTools ``computeMatrix --outFileNameMatrix``, that thus must be used prior to ``dsCompareCurves``. 
+
+In a nutshell, ``dsCompareCurves`` is replacing deepTools ``plotProfile``, but with customisable, scalable and publication ready plots, in addition to providing statistical analyses.
+
+``dsCompareCurves`` compares regions for each signal (``--comparison regions``), or compares all signals for each region set (``--comparison scores``).
+
+Concerning the plots and as the other deepStats tools, a lot of parameters can be customized: plot colors (although the basic color scale is color-blind friendly), fonts, plot size and size ratio.
 
 
 _______________
@@ -200,14 +207,17 @@ _______________
 Example usage
 -------------
 
-
 Below you can find an example of regions comparison.
 
-We consider two set of regions, conserved genes, and unconserved genes in Drosophila melanogaster. The want to know which histone marks from modENCODE are differentially enriched between these two regions sets.
+We consider two set of regions, conserved genes, and unconserved genes in Drosophila melanogaster. We want to know which histone marks from modENCODE are differentially enriched between these two regions sets.
 
 Prior to ``dsCompareCurves``, we used **deepTools** ``computeMatrix scale-regions`` with the two bed files as regions, and the three histone marks bigwig tracks as scores. We also added the optional parameter ``outFileNameMatrix`` in order to get the output as a tab-delimited file (.txt).
 
-The latter file is then used as input for the present tool in "regions", in order to compare the conserved and unconserved genes for each one of the three histone marks. You can find an image describing the output below using the said data set and the following galaxy parameters:
+For more information about deepTools computeMatrix: https://deeptools.readthedocs.io/en/develop/content/tools/computeMatrix.html
+
+The latter file `deeptools_computeMatrix_output.txt ` is then used as input for the present tool in "regions" mode, in order to compare the conserved and unconserved genes for each one of the three histone marks scores.
+
+You can find an image describing the outputs below using the said data set and the parameters used for the same analysis on Galaxy:
 
 .. class:: bold
 
