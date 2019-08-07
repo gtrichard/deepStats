@@ -1,7 +1,7 @@
 [![install with bioconda](https://img.shields.io/badge/install%20with-bioconda-brightgreen.svg?style=flat)](http://bioconda.github.io/recipes/deepstats/README.html) ![](https://img.shields.io/badge/lifecycle-experimental-orange.svg) [![DOI](https://zenodo.org/badge/189997890.svg)](https://zenodo.org/badge/latestdoi/189997890) ![Version](https://anaconda.org/bioconda/deepstats/badges/version.svg) ![GPL3](
 https://anaconda.org/bioconda/deepstats/badges/license.svg)
 
-![](docs/images/deepStats_logo.png?raw=true "Title")
+<img src="https://github.com/gtrichard/deepStats/blob/master/docs/images/deepStats_logo.png?raw=true" width="720px" class="center">
 
 **deepStats 0.3.1 is a statistical and dataviz toolbox for deeptools, genomic signals, and more (GOterms, etc).**
 
