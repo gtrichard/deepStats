@@ -9,8 +9,9 @@ https://anaconda.org/bioconda/deepstats/badges/license.svg)
 
 ## Citation
 
-If you use deepStats in your work, please cite this repository using the DOI from the following link:
-https://doi.org/10.5281/zenodo.3336593
+If you use deepStats in your work, please cite this repository using the following :
+
+Gautier RICHARD. (2019, August 6). gtrichard/deepStats: deepStats 0.3.1 (Version 0.3.1). Zenodo. https://doi.org/10.5281/zenodo.3336593
 
 ## Installation
 
@@ -55,5 +56,4 @@ https://github.com/gtrichard/deepStats/wiki
 | ----------------- | ---------------------------------------------------- |
 | [dsCompareCurves] | compares multiple genomic scores at multiple regions sets by bootstraps and per-bin distribution test |
 
-
-The tools complete description are available on the Wiki: https://github.com/gtrichard/deepStats/wiki
+[dsCompareCurves]: https://github.com/gtrichard/deepStats/wiki/dsCompareCurves
