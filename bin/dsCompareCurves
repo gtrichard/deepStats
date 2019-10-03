@@ -8,6 +8,7 @@ suppressMessages( library( 'showtext' ) )
 suppressMessages( library( 'tidyverse' ) )
 suppressMessages( library( 'dichromat' ) )
 suppressMessages( library( 'purrr' ) )
+suppressMessages( library( 'vroom' ) )
 
 options( show.error.locations = TRUE )
 
@@ -271,7 +272,7 @@ if ( mode=="deeptools" ) {
 
   bootstraps_to_plot<-list()
 
-  dat <- read.table( file=opt$input, header=F, sep=( "\t" ),skip=3 ) #loading the input file content
+  suppressMessages( dat <- vroom(opt$input,skip = 3,col_names = FALSE) ) #loading the input file content
   nbbin  <- as.numeric(  ncol( dat  ) / length(  metadata$scores  )  ) # number of bins to analyze ( a bin = a column in the file )
   scores_length <- rep( x=nbbin,times=length( metadata$scores ) )
   line_index_end <- c( cumsum( metadata$group_length ) )
@@ -409,7 +410,7 @@ if ( mode=="deeptools" ) {
         wilcox_res <- vector()
 
         for ( bins in ( 1:ncol( group_1_data ) ) ) {
-          wilcox_res[bins] <- wilcox.test( group_1_data[,bins],group_2_data[,bins] )$p.value
+          wilcox_res[bins] <- wilcox.test( group_1_data[,bins][[1]],group_2_data[,bins][[1]] )$p.value
         }
 
         wilcox_adjust <- p.adjust( wilcox_res,method = "bonferroni" )
@@ -480,7 +481,7 @@ if ( mode=="deeptools" ) {
         wilcox_res <- vector()
 
         for ( bins in ( 1:ncol( group_1_data ) ) ) {
-          wilcox_res[bins] <- wilcox.test( group_1_data[,bins],group_2_data[,bins] )$p.value
+          wilcox_res[bins] <- wilcox.test( group_1_data[,bins][[1]],group_2_data[,bins][[1]] )$p.value
         }
 
         wilcox_adjust <- p.adjust( wilcox_res,method = "bonferroni" )
