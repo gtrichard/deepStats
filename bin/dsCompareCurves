@@ -126,8 +126,8 @@ substrRight <- function( x, n ) {
   substr( x, nchar( x )-n+1, nchar( x ) )
 }
 
-if ( substrRight( opt$input,6 ) == ".dscc"  ) {
-  mode="boots"
+if ( substrRight( opt$input,5 ) == ".dscc"  ) {
+  mode="dscc"
   cat( as.character( Sys.time() ),".dscc file provided as input, skipping statistical analysis.\n" )
 }else{mode="deeptools"}
 
@@ -201,7 +201,7 @@ if ( mode == "deeptools" ) {
 
 #### SETUP INPUT FILES IN CASE A BOOTS FILE IS PROVIDED ####
 
-if ( mode == "boots" ) {
+if ( mode == "dscc" ) {
   cat( as.character( Sys.time() ),"Extracting data from file:\n   ", opt$input )
   master_list <- readRDS( file=opt$input )
   metadata <- master_list$metadata
@@ -552,9 +552,9 @@ if ( metadata$xaxis_values[3]==0 ) {
   #Start and end definition
   xaxis["xaxis_start"][1] <- as.numeric( 1 ) # position
   xaxis$xaxis_start[2] <- paste( ( -1 * metadata$xaxis_values[2] / 1000 ),"kb",sep = "" )
-  xaxis["xaxis_end"][1] <- as.numeric( max( bootstraps_to_plot$Bin ) ) # position
+  xaxis["xaxis_end"][1] <- as.numeric( max( master_list[[1]][[1]][[1]]$Bin ) ) # position
   xaxis$xaxis_end[2] <- paste( ( metadata$xaxis_values[1] / 1000 ),"kb",sep = "" )
-  xaxis["first_region"][1] <- round( as.integer( max( bootstraps_to_plot$Bin ) ) / 2 )
+  xaxis["first_region"][1] <- round( as.integer( max( master_list[[1]][[1]][[1]]$Bin) ) / 2 )
   xaxis$first_region[2] <- linebreaker( opt$firstRegionName )
   xaxis$second_region <- NULL
 
@@ -562,7 +562,7 @@ if ( metadata$xaxis_values[3]==0 ) {
   #Scaled region
   xaxis["xaxis_start"][1] <- 0 # position
   xaxis$xaxis_start[2] <- paste( ( -1 * metadata$xaxis_values[2] / 1000 ),"kb",sep = "" )
-  xaxis["xaxis_end"][1] <- as.numeric( max( bootstraps_to_plot$Bin ) ) # position
+  xaxis["xaxis_end"][1] <- as.numeric( max( master_list[[1]][[1]][[1]]$Bin ) ) # position
   xaxis$xaxis_end[2] <- paste( ( metadata$xaxis_values[1] / 1000 ),"kb",sep = "" )
   xaxis["first_region"] <- metadata$xaxis_values[2] /  metadata$xaxis_values[4]
   xaxis$first_region[2] <- linebreaker( opt$firstRegionName )
@@ -627,9 +627,7 @@ for (group in 1:length(metadata$group_names)){ # One plot per region
 
 
   for (score in 1:length(metadata$scores)) {
-    score_name <- metadata$scores[score]
-    group_name <- metadata$group_names[group]
-    data_frame_storage[[score]] <- master_list[[score_name]]$bootstraps[[group_name]]
+    data_frame_storage[[score]] <- master_list[[score]]$bootstraps[[group]]
   }
 
   bootstraps_to_plot <- do.call( rbind,data_frame_storage)
