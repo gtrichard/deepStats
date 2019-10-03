@@ -654,7 +654,9 @@ make_boot_plot<-function(x,type){
     scale_color_manual( legend_title, values = color_palette )+
     scale_fill_manual( legend_title, values = fill_palette )+
     scale_x_continuous( NULL , breaks=xaxis$breaks, labels=xaxis$names )+
-    {if(opt$bootPlotShareY==TRUE) ylim(min(bootstraps_to_plot$Min),max(bootstraps_to_plot$Max))}+
+    {if(opt$bootPlotShareY==FALSE) scale_y_continuous(labels= function(x) sprintf("%.2f", x)) }+
+    {if(opt$bootPlotShareY==TRUE) scale_y_continuous(labels= function(x) sprintf("%.2f", x),
+                                                     limits = c(min(bootstraps_to_plot$Min),max(bootstraps_to_plot$Max)))}+
     ylab( opt$signalName )+
     panel_border( size=1, remove=FALSE )+
     coord_fixed(ratio=ratio)+
