@@ -8,29 +8,30 @@ suppressMessages( library( 'tidyverse' ) )
 suppressMessages( library( 'dichromat' ) )
 suppressMessages( library( 'vroom' ) )
 suppressMessages( library( 'reshape2' ) )
-#suppressMessages( library( 'purrr' ) )
 
 options( show.error.locations = TRUE )
 
 #### ARGUMENTS ####
 
 option_list = list(
-  
+
   make_option( c( "-i","--input" ), type="character", default=NULL,
-               help="DeepTools file obtained from multiBigwigSummary.", metavar="character" ),
-  
+               help="DeepTools file obtained from multiBigwigSummary, either as
+               .npz or tab-delimited (`--outRawCounts`).",
+               metavar="character" ),
+
   make_option( c( "-o", "--output" ), type="character", default=NULL,
-               help="Output prefix. A plot is generated in pdf format, alongside text files
-               containing the stastistical tests results.", metavar="character" )
+               help="Output prefix. A plot is generated in pdf format, alongside
+               text files containing the stastistical tests results.",
+               metavar="character" )
 );
 
 opt_parser = OptionParser( description= "
-                           This tool assesses if multiple genomics signals ( ChIP-seq, ATAC-seq... ) are significantly different or
-                           not between conditions ( control, KO1, KO2, etc ). `dsCompareCurves` uses bootstraps and corrected
-                           Wilcoxon Rank-sum tests to do so. The input of this tool corresponds to the output of deepTools
-                           `computeMatrix --outFileNameMatrix`. If multiple region sets have been used in deepTools, one plot and
-                           tab-delimited table will be produced for each set of regions.",
-                           usage = "dsCompareCurves --input file.txt --output results", option_list=option_list );
+dsCompareValues computes boxplots and Wilcoxon Rank-sum Test on deepTools
+multiBigwigSummary results. Optionally, multiple multiBigwigSummary files can be
+provided as input to compare the biwigs one by one in different region sets.",
+usage = "dsCompareValues --input multiBigwigSummary1.txt multiBigwigSummary2.txt \
+        --output 1vs2_results", option_list=option_list );
 opt = parse_args( opt_parser );
 
 if ( is.null( opt$input ) ) {
@@ -42,22 +43,52 @@ if ( is.null( opt$output ) ) {
   print_help( opt_parser )
   stop( "An output prefix must be supplied", call.=FALSE )
 }
-  
+
 
 ###### TEST PART ######
 
-opt$input="Downloads/computeMatrixOperations.mat"
-  
+#opt[["input"]] <- "../test/compareValues_bound.txt"
+#opt[["input"]] <- "../test/compareValues_unbound.txt"
+
 ###### DATA LOADING ######
 
-data <- vroom("Downloads/computeMatrixOperations.mat",delim = "\t",skip=1,col_names = FALSE)
+# I still have to check how to perform the load of multiple files, this will
+# be a different loading anyways and should produce multiple dataMatrix in one list
 
-metadata <- list()
-metadata[["sample_names"]] <- colnames(data[,3:ncol(data)])
+dataMatrix <- as.data.frame(tryCatch(
+  {
+    data <- list()
+    message("One file provided, loading file as tab-delimited.")
+    suppressMessages(inputData<-vroom(opt$input))
+    data[["labels"]] <- as.character(colnames(inputData[,4:ncol(inputData)]))
+    data[["matrix"]] <- as.matrix(inputData[,4:ncol(inputData)])
+  },
+  error=function(e) {
+    data <- list()
+    message("File loading failed, it might be compressed.")
+    message("Loading file as .npz.")
+    np <- import("numpy")
+    inputData <- np$load(opt$input)
+    data <- data.frame(inputData$f[["matrix"]])
+    colnames(data) <- inputData$f[["labels"]]
+    return(data)
+  }
+))
+suppressWarnings (rm(data))
+suppressWarnings (rm(np))
+suppressWarnings (rm(inputData))
+message("File loaded.")
+
+dataMatrices <- list()
+dataMatrices[[1]] <- dataMatrix
 
 ###### REFORMATING FOR STATS AND PLOTS ######
 
-data <- melt(data,id.vars = c("chr","start","end"))
+dataGGMatrices <- list()
+
+for (i in 1:length(dataMatrices)){
+  dataGGMatrices[[i]] <- melt(dataMatrices[[i]],...)
+}
 
 ##### STATISTICS #####
 
@@ -72,9 +103,3 @@ summary(fit)
 ##### PLOTTING #####
 
 ggplot()
-
-
-
-  
-  
-  
