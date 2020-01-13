@@ -19,7 +19,7 @@ https://github.com/gtrichard/deepStats/wiki
 | Tool name         | Description                                          |
 | ----------------- | ---------------------------------------------------- |
 | [dsCompareCurves] | compares multiple genomic scores at multiple regions sets by bootstraps and per-bin distribution test |
-| [dsBedFeaturesDensity] | compares multiple genomic scores at multiple regions sets by bootstraps and per-bin distribution test |
+| [dsBedFeaturesDensity] | computes BED files features density along the genome given a bin size, output as bedGraphs |
 
 [dsCompareCurves]: https://github.com/gtrichard/deepStats/wiki/dsCompareCurves
 [dsBedFeaturesDensity]: https://github.com/gtrichard/deepStats/wiki/dsBedFeaturesDensity
