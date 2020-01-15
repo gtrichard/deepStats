@@ -7,13 +7,14 @@ suppressMessages( library( 'IRanges' ) )
 options(scipen=999)
 
 #### ARGUMENTS ####
-parser <- ArgumentParser(description="From .BED files, compute their features density along the genome in bedGraph format using a given window size.")
+parser <- ArgumentParser(description="From .BED files and a chromosome sizes file, compute the BED features density along the genome in bedGraph format using a given window size.",
+                         usage = "dsComputeBEDDensity --input file1.bed file2.bed --chromSize chrom.sizes --windowSize 10000 --output file1 file2")
 
 parser$add_argument("--input","-i", type="character",action="store", nargs='+', dest="input", metavar="character",
                     help="BED files from which features density will be calculated." )
 
-parser$add_argument("--chromSize","-c", type="character", action="store", 
-                    help="Tab-delimited file containing chromosome sizes.", metavar="character")
+parser$add_argument("--chromSize","-c", type="character", action="store",
+                    help="A 2 columns tab-delimited file containing chromosome sizes, with one chromosome per line.", metavar="character")
 
 parser$add_argument("--windowSize", "-w",  type="integer", action="store", metavar="number",default=1000,
                     help="Size of the window used to binify the genome and calculate bed files density. Default: 1000." )
@@ -73,7 +74,7 @@ chrs <- lapply(beds,retain_chr)
 
 cat( as.character( Sys.time() ), "Binifying the genome to given window size",args$windowSize,"\n")
 
-seqlast <- function (from, to, by) 
+seqlast <- function (from, to, by)
 {
   vec <- do.call(what = seq, args = list(from, to, by))
   if ( tail(vec, 1) != to ) {
@@ -143,4 +144,3 @@ for (i in 1:length(bedGraph)){
   cat( as.character( Sys.time() ), "Exporting results to ",outname,"\n")
   write.table(bedGraph[[i]],file = outname,quote = F,col.names = F,row.names = F,sep = "\t")
 }
-
