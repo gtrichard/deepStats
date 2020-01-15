@@ -3,6 +3,7 @@
 suppressMessages( library( 'argparse' ) )
 suppressMessages( library( 'seqinr' ) )
 suppressMessages( library( 'stringr' ) )
+suppressMessages( library( 'Rsamtools' ) )
 
 options(scipen=999)
 
