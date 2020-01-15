@@ -1,6 +1,6 @@
 #!/usr/bin/env Rscript
 
-suppressMessages( library( 'optparse' ) )
+suppressMessages( library( 'argparse' ) )
 suppressMessages( library( 'boot' ) )
 suppressMessages( library( 'ggplot2' ) )
 suppressMessages( library( 'cowplot' ) )
@@ -15,103 +15,80 @@ options( show.error.locations = TRUE )
 
 #### ARGUMENTS ####
 
-option_list = list(
+parser <- ArgumentParser(description= "dsCompareCurves 0.3.1 assesses if multiple genomics signals ( ChIP-seq, ATAC-seq... ) are significantly different or not between conditions ( control, KO1, KO2, etc ). `dsCompareCurves` uses bootstraps and corrected Wilcoxon Rank-sum tests to do so. The input of this tool corresponds to the output of deepTools `computeMatrix --outFileNameMatrix`. If multiple region sets have been used in deepTools, one plot and tab-delimited table will be produced for each set of regions.",
+                         usage = "dsCompareCurves --input file.txt --output results")
 
-  make_option( c( "-i","--input" ), type="character", default=NULL,
-               help="DeepTools file obtained from computeMatrix --outFileNameMatrix.
-               Alternatively, a .dscc file from previous dsCompareCurves runs can be provided
-               for replotting purposes and to avoid the bootstraps computation once more.", metavar="character" ),
+parser$add_argument("--input","-i", type="character", default=NULL,
+                    help="DeepTools file obtained from computeMatrix --outFileNameMatrix. Alternatively, a .dscc file from previous dsCompareCurves runs can be provided for replotting purposes and to avoid the bootstraps computation once more.", metavar="character" )
 
-  make_option( c( "--output", "-o" ), type="character", default=NULL,
-               help="Output prefix. Three files will be generated, a .pdf file containing the plot
-               and a .dscc file containing the bootsraps information ( RDS file ). If a .dscc file
-               is provided as input, only the plot will be produced as pdf.", metavar="character" ),
+parser$add_argument("--output", "-o", type="character", default=NULL,
+                    help="Output prefix. Three files will be generated, a .pdf file containing the plot and a .dscc file containing the bootsraps information ( RDS file ). If a .dscc file is provided as input, only the plot will be produced as pdf.", metavar="character" )
 
-  make_option( c( "--comparison", "-c" ), type="character", default=NULL,
-               help="When specifying 'regions' or 'scores', force a given comparison. The correct comparison to
-               perform is otherwise automatically detected.", metavar="character" ),
+parser$add_argument("--comparison", "-c", type="character", default=NULL,
+                    help="When specifying 'regions' or 'scores', force a given comparison. The correct comparison to perform is otherwise automatically detected.", metavar="character" )
 
-  make_option( c( "--scoreLabels" ), type="character", default=NULL,
-               help="Names of the scores to be displayed on the plots. It must be provided as text seperated by semi-colons, i.e.
-               'Score A;Score B;Score C'.", metavar="character" ),
+parser$add_argument("--scoreLabels", type="character", default=NULL,
+                    help="Names of the scores to be displayed on the plots. It must be provided as text seperated by semi-colons, i.e. 'Score A;Score B;Score C'.", metavar="character" )
 
-  make_option( c( "--regionLabels" ), type="character", default=NULL,
-               help="Names of the regions to be displayed on the plots. It must be provided as text seperated by semi-colons, i.e.
-               'Regions A; Regions B; Regions C'.", metavar="character" ),
+parser$add_argument("--regionLabels", type="character", default=NULL,
+                    help="Names of the regions to be displayed on the plots. It must be provided as text seperated by semi-colons, i.e. 'Regions A; Regions B; Regions C'.", metavar="character" )
 
-  make_option( c( "--signalName" ), type="character", default="Genomic signal",
-               help="Name given to the signal, for instance 'H3K4me3 log2input'.
-               Default: 'Genomic signal'", metavar="character" ),
+parser$add_argument("--signalName", type="character", default="Genomic signal",
+                    help="Name given to the signal, for instance 'H3K4me3 log2input'. Default: 'Genomic signal'", metavar="character" )
 
-  make_option( c( "--bootstraps", "-b" ), type="integer", default=1000,
-               help="Number of bootstraps to perform. Default: 1000.", metavar="integer" ),
+parser$add_argument("--bootstraps", "-b", type="integer", default=1000,
+                    help="Number of bootstraps to perform. Default: 1000.", metavar="integer" )
 
-  make_option( c( "--bootstrapsCI" ), type="numeric", default=0.95,
-               help="Confidence intervals (CI) threshold for bootstraps. Default: 0.95.", metavar="numeric" ),
+parser$add_argument("--bootstrapsCI", type="double", default=0.95,
+                    help="Confidence intervals (CI) threshold for bootstraps. Default: 0.95.", metavar="numeric" )
 
-  make_option( c( "--CPU", "-p" ), type="integer", default=4,
-               help="Number of CPU to use. Default: 4.", metavar="integer" ),
+parser$add_argument("--CPU", "-p", type="integer", default=4,
+                    help="Number of CPU to use. Default: 4.", metavar="integer" )
 
-#  make_option( c( "--wilcoxStartBin" ), type="numeric", default=NULL,
+#  parser$add_argument("--wilcoxStartBin", type="numeric", default=NULL,
 #               help="The start bin number used to restrict the corrected
 #               wilcoxon test to a given portion of the plot. An integer must be provided.
-#               Default: first bin.", metavar="numeric" ),
+#               Default: first bin.", metavar="numeric" )
 
-#  make_option( c( "--wilcoxEndBin" ), type="numeric", default=NULL,
+#  parser$add_argument("--wilcoxEndBin", type="numeric", default=NULL,
 #               help="The end bin number used to restrict the corrected
 #               wilcoxon test to a given portion of the plot. An integer must be provided.
-#               Default: last bin.", metavar="numeric" ),
+#               Default: last bin.", metavar="numeric" )
 
-  make_option( c( "--wilcoxThreshold" ), type="numeric", default=0.05,
-               help="Threshold used to define significant bins on the Wilcoxon rank-sum
-               test plot. Default: 0.05", metavar="numeric" ),
+parser$add_argument("--wilcoxThreshold", type="double", default=0.05,
+                    help="Threshold used to define significant bins on the Wilcoxon rank-sum test plot. Default: 0.05", metavar="numeric" )
 
-  make_option( c( "--firstRegionName" ), type="character", default="TSS",
-               help="Name of the central or left region. Default: TSS", metavar="character" ),
+parser$add_argument("--firstRegionName", type="character", default="TSS",
+                    help="Name of the central or left region. Default: TSS", metavar="character" )
 
-  make_option( c( "--secondRegionName" ), type="character", default="TES",
-               help="Name of the right region, only used when deeptools computeMatrix
-               ran in scaled-regions mode. Default: TES", metavar="character" ),
+parser$add_argument("--secondRegionName", type="character", default="TES",
+                    help="Name of the right region, only used when deeptools computeMatrix ran in scaled-regions mode. Default: TES", metavar="character" )
 
-  make_option( c( "--bootPlotShareY" ), type="character", default="TRUE",
-               help="Given TRUE or FALSE, defines if the bootstraps plots should
-               share the same scale on the y axis or not. Default: TRUE", metavar="character" ),
+parser$add_argument("--bootPlotShareY", type="character", default="TRUE",
+                    help="Given TRUE or FALSE, defines if the bootstraps plots should share the same scale on the y axis or not. Default: TRUE", metavar="character" )
 
-  make_option( c( "--bootPlotColors" ), type="character", default=NULL,
-               help="Change the bootstraps plot color palette to a user-provided one. The file must
-               be tab-delimited and contain for each line two HTML color codes ( #3366CC   #769EF2 ).
-               The first column corresponds to the mean color, the second column corresponds to the
-               color of the bootstrap confidence interval shadowed area. The default color scale
-               contains 6 colors that are color blind friendly using the dichromat R package.", metavar="character" ),
+parser$add_argument("--bootPlotColors", type="character", default=NULL,
+                    help="Change the bootstraps plot color palette to a user-provided one. The file must be tab-delimited and contain for each line two HTML color codes ( #3366CC   #769EF2 ). The first column corresponds to the mean color, the second column corresponds to the color of the bootstrap confidence interval shadowed area. The default color scale contains 6 colors that are color blind friendly using the dichromat R package.", metavar="character" )
 
-  make_option( c( "--bootPlotRatio" ), type="character", default=0.85,
-               help="Changes the aspect ratio of the plot. A value < 1 results in a wide plot,
-               a value > 1 results in a narrow plot. Default: 0.85.", metavar="character" ),
+parser$add_argument("--bootPlotRatio", type="double", default=0.85,
+                    help="Changes the aspect ratio of the plot. A value < 1 results in a wide plot, a value > 1 results in a narrow plot. Default: 0.85.", metavar="numeric" )
 
-  make_option( c( "--bootPlotWidth" ), type="numeric", default=5.2,
-               help="How large the bootstraps plot should be. Default: 5.2", metavar="numeric" ),
+parser$add_argument("--bootPlotWidth", type="double", default=5.2,
+                    help="How large the bootstraps plot should be. Default: 5.2", metavar="numeric" )
 
-  make_option( c( "--bootPlotHeight" ), type="numeric", default=3.7,
-               help="How tall the bootstraps plot should be. Default: 3.7", metavar="numeric" ),
+parser$add_argument("--bootPlotHeight", type="double", default=3.7,
+                    help="How tall the bootstraps plot should be. Default: 3.7", metavar="numeric" )
 
-  make_option( c( "--wilcoxPlotWidth" ), type="numeric", default=4.6,
-               help="How large the Wilcoxon rank-sum test plot should be. Default: 4.6", metavar="numeric" ),
+parser$add_argument("--wilcoxPlotWidth", type="double", default=4.6,
+                    help="How large the Wilcoxon rank-sum test plot should be. Default: 4.6", metavar="numeric" )
 
-  make_option( c( "--wilcoxPlotHeight" ), type="numeric", default=4.6,
-               help="How tall the Wilcoxon rank-sum test  plot should be. Default: 4.6", metavar="numeric" ),
+parser$add_argument("--wilcoxPlotHeight", type="double", default=4.6,
+                    help="How tall the Wilcoxon rank-sum test  plot should be. Default: 4.6", metavar="numeric" )
 
-  make_option( c( "--font" ), type="character", default=NULL,
-               help="Font used for plotting, given a TTF file. Default is usually Helvetica.", metavar="character" )
-);
+parser$add_argument("--font", type="character", default=NULL,
+                    help="Font used for plotting, given a TTF file. Default is usually Helvetica.", metavar="character" )
 
-opt_parser = OptionParser( description= "
-                           dsCompareCurves 0.3.1 assesses if multiple genomics signals ( ChIP-seq, ATAC-seq... ) are significantly different or
-                           not between conditions ( control, KO1, KO2, etc ). `dsCompareCurves` uses bootstraps and corrected
-                           Wilcoxon Rank-sum tests to do so. The input of this tool corresponds to the output of deepTools
-                           `computeMatrix --outFileNameMatrix`. If multiple region sets have been used in deepTools, one plot and
-                           tab-delimited table will be produced for each set of regions.",
-                           usage = "dsCompareCurves --input file.txt --output results", option_list=option_list );
-opt = parse_args( opt_parser );
+opt <- parser$parse_args()
 
 if ( is.null( opt$input ) ) {
   print_help( opt_parser )
