@@ -1,0 +1,111 @@
+#!/usr/bin/env Rscript
+# DETERMINES THE GC CONTENT ALONG THE GENOME: FROM FASTA TO BEDGRAPH
+suppressMessages( library( 'argparse' ) )
+suppressMessages( library( 'seqinr' ) )
+suppressMessages( library( 'stringr' ) )
+
+options(scipen=999)
+
+#### ARGUMENTS ####
+parser <- ArgumentParser(description="From .fasta files, compute their GC content along the genome in bedGraph format using a given window size.")
+
+parser$add_argument("--input","-i", type="character",action="store", nargs='+', dest="input", metavar="character",
+                    help="Fasta files from which you want the GC content to be calculated." )
+
+parser$add_argument("--windowSize", "-w",  type="integer", action="store", metavar="number",default=1000,
+                    help="Size of the window used to binify the genome and calculate the GC content. Default: 1000." )
+
+parser$add_argument("--output","-o", type="character",action="store", nargs='+', dest="output", metavar="character",
+                    help="bedGraph file(s) output prefix name(s) ('.bedGraph' is automatically added at the end of the given prefix, one bedGraph per input file)." )
+
+args <- parser$parse_args()
+
+#### TEST ####
+
+setwd("~/Documents/Coding/dsGCCoverage") 
+args$input=c("data/genome_schiifu.fa","data/genome_chloro.fa")
+args$windowSize=10000
+args$output=c("schiifu","chloro")
+
+
+#### SANITY CHECK ####
+
+if ( is.null( args$input ) ) {
+  parser$print_help()
+  stop( "An input file must be supplied.", call.=FALSE )
+}
+
+if ( is.null( args$output ) ) {
+  parser$print_help()
+  stop( "An output prefix must be supplied.", call.=FALSE )
+}
+
+#### SET WD AND GET ABS PATHS ####
+
+args$input <- normalizePath( args$input )
+args$output <- paste( normalizePath( dirname( args$output ) ),"/",basename( args$output ),sep="" )
+setwd( normalizePath( dirname( args$output ) ) )
+
+#### LOAD DATA ####
+
+seqlast <- function (from, to, by) 
+{
+  vec <- do.call(what = base::seq, args = list(from, to, by))
+  if ( tail(vec, 1) != to ) {
+    return(c(vec, to))
+  } else {
+    return(vec)
+  }
+}
+
+bedGraphsOutput <- list()
+for (fa in 1:length(args$input)){
+  cat( as.character( Sys.time() ), "Loading fasta file",args$input[fa],"\n")
+  fasta <- FaFile(args$input[[fa]])
+  indexFa(fasta)
+  fasta <- FaFile(args$input[[fa]])
+  fasta_index <- scanFaIndex(fasta)
+  chrsNames <- as.character(fasta_index@seqnames@values)
+  chrsLengths <- as.numeric(fasta_index@seqinfo@seqlengths)
+  bedGraph <- data.frame(chrom=character(),start=integer(),end=integer(),stringsAsFactors=FALSE)
+  cat( as.character( Sys.time() ), "Making bedGraph structure\n")
+  for (chr in 1:length(chrsNames)){
+    size = chrsLengths[chr]
+    if (size <= args$windowSize){
+      binsStart <- 1
+      binsEnd   <- size
+    } else {
+      binsStart <- seqlast(from = 1, to = size - args$windowSize, by = args$windowSize)
+      binsEnd   <- seqlast(from = args$windowSize, to = size, by = args$windowSize)
+    }
+    tmp_length <- length(binsStart)
+    tmp <- data.frame(chrom=character(),start=integer(),end=integer(),stringsAsFactors=FALSE)
+    tmp[1:tmp_length,1:3] <- 0
+    tmp[,1] <- chrsNames[chr]
+    tmp[,2] <- binsStart
+    tmp[,3] <- binsEnd
+    bedGraph <- rbind(bedGraph,tmp)
+  }
+  bedGraphRanges <- makeGRangesFromDataFrame(df = bedGraph)
+  cat( as.character( Sys.time() ), "Calculating GC content for each bin\n")
+  GCcontent <- vector()
+  for (seq in 1:length(bedGraphRanges)){
+  dna <- scanFa(fasta,bedGraphRanges[seq,])
+  gcvalue <- round(str_count(dna,"[GC]")/str_count(dna,"[ATGC]"),4)
+  if (gcvalue == "NaN"){
+    gcvalue <- 0
+  }
+  bedGraph[seq,"GCContent"] <- gcvalue
+  }
+  bedGraph[,2] <- bedGraph[,2] - 1
+  bedGraph[,3] <- bedGraph[,3]
+  bedGraphsOutput[[fa]] <- bedGraph
+  cat( as.character( Sys.time() ), "Done\n")
+}
+
+for (fa in 1:length(args$input)){
+  outname <- paste0(args$output[fa],".bedGraph")
+  cat( as.character( Sys.time() ), "Exporting results to ",outname,"\n")
+  write.table(bedGraphsOutput[[fa]],file = outname,quote = F,col.names = F,row.names = F,sep = "\t")
+}
+
