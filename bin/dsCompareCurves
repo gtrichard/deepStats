@@ -15,7 +15,7 @@ options( show.error.locations = TRUE )
 
 #### ARGUMENTS ####
 
-parser <- ArgumentParser(description= "dsCompareCurves 0.3.1 assesses if multiple genomics signals ( ChIP-seq, ATAC-seq... ) are significantly different or not between conditions ( control, KO1, KO2, etc ). `dsCompareCurves` uses bootstraps and corrected Wilcoxon Rank-sum tests to do so. The input of this tool corresponds to the output of deepTools `computeMatrix --outFileNameMatrix`. If multiple region sets have been used in deepTools, one plot and tab-delimited table will be produced for each set of regions.",
+parser <- ArgumentParser(description= "dsCompareCurves assesses if multiple genomics signals ( ChIP-seq, ATAC-seq... ) are significantly different or not between conditions ( control, KO1, KO2, etc ). `dsCompareCurves` uses bootstraps and corrected Wilcoxon Rank-sum tests to do so. The input of this tool corresponds to the output of deepTools `computeMatrix --outFileNameMatrix`. If multiple region sets have been used in deepTools, one plot and tab-delimited table will be produced for each set of regions.",
                          usage = "dsCompareCurves --input file.txt --output results")
 
 parser$add_argument("--input","-i", type="character", default=NULL,
