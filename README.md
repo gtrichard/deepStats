@@ -7,7 +7,7 @@ https://anaconda.org/bioconda/deepstats/badges/license.svg)
 
 **deepStats 0.3.1 is a statistical and dataviz toolbox for deeptools, genomic signals, and more (GOterms, etc).**
 
-It aims at providing statistical analyses and streamlining the production of high quality, color-blind friendly, and fully customisable plots (up to the fonts!) for your classic genomic datasets (.bed, .bigwig, gene lists). The goal of deepStats is thus to significantly decrease the amount of time spent in Inkscape/Illustrator to get publication ready plots, and decreasing the research time allotted to finding proper statistical analyses for your genomic signals and datasets.
+It aims at providing statistical analyses and streamlining the production of high quality, color-blind friendly, and fully customisable plots (up to the fonts!) for your classic genomic datasets (.bed, .bigwig, gene lists). The goal of deepStats is thus to significantly decrease the amount of time spent in Inkscape/Illustrator to get publication ready plots, and decreasing the research time allotted to finding proper statistical analyses for your genomic signals and datasets. It also aims at giving tools to complement deepTools functions.
 
 **This is currently a Work In Progress**
 
@@ -44,7 +44,7 @@ conda activate deepStats
 
 - **As R Notebooks**
 
-Currently, R notebooks are not up-to-date.
+**Currently, R notebooks are not up-to-date.**
 
 Install the following packages in your R environment:
 ```
@@ -65,5 +65,3 @@ git clone https://github.com/gtrichard/deepStats
 - **As Galaxy wrappers**
 
 You can install deepStats in a Galaxy instance through the [Galaxy Tool Shed](https://toolshed.g2.bx.psu.edu/repository/manage_repository?sort=name&operation=view_or_manage_repository&f-free-text-search=deepstats&id=4125c47ee1118a75)
-
-
