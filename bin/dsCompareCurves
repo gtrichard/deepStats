@@ -27,6 +27,7 @@ parser$add_argument("--output", "-o", type="character", default=NULL,
 parser$add_argument("--comparison", "-c", type="character", default=NULL,
                     help="When specifying 'regions' or 'scores', force a given comparison. The correct comparison to perform is otherwise automatically detected.", metavar="character" )
 
+# nargs = '+' should be used at some point, bug changing this would break galaxy and the documentation and would require "" for each label.
 parser$add_argument("--scoreLabels", type="character", default=NULL,
                     help="Names of the scores to be displayed on the plots. It must be provided as text seperated by semi-colons, i.e. 'Score A;Score B;Score C'.", metavar="character" )
 
@@ -119,13 +120,13 @@ setwd( normalizePath( dirname( opt$output ) ) )
 
 #### REMOVE BAD LABELS ####
 
-if ( opt$scoreLabels=="" ) {
-  opt$scoreLabels <- NULL
-}
+#if ( opt$scoreLabels== NULL ) {
+#  opt$scoreLabels <- NULL
+#}
 
-if ( opt$regionLabels=="" ) {
-  opt$regionLabels <- NULL
-}
+#if ( opt$regionLabels=="" ) {
+#  opt$regionLabels <- NULL
+#}
 
 #### METADATA EXTRACTION ####
 
