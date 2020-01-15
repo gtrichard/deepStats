@@ -1,5 +1,5 @@
 #!/usr/bin/env Rscript
-
+# BOOTSTRAPS ON DEEPTOOLS COMPUTE MATRIX OUTPUT AND PLOT
 suppressMessages( library( 'argparse' ) )
 suppressMessages( library( 'boot' ) )
 suppressMessages( library( 'ggplot2' ) )

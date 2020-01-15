@@ -1,5 +1,5 @@
 #!/usr/bin/env Rscript
-
+# BED TO BEDGRAPH GIVEN A WINDOW SIZE
 suppressMessages( library( 'argparse' ) )
 suppressMessages( library( 'vroom' ) )
 suppressMessages( library( 'IRanges' ) )
