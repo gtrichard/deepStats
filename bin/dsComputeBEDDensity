@@ -7,6 +7,7 @@ suppressMessages( library( 'IRanges' ) )
 options(scipen=999)
 
 #### ARGUMENTS ####
+
 parser <- ArgumentParser(description="From .BED files and a chromosome sizes file, compute the BED features density along the genome in bedGraph format using a given window size.",
                          usage = "dsComputeBEDDensity --input file1.bed file2.bed --chromSize chrom.sizes --windowSize 10000 --output file1 file2")
 
