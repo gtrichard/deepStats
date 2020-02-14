@@ -10,6 +10,6 @@ jobs:
       - image: quay.io/biocontainers/deepstats:0.4--0
     steps:
       - checkout # check out the code in the project directory
-      - run: cd deepStats
-      - run: chmod +x tests/tests.R
-      - run: .tests/tests.R
+      - run: find . -type f -name '*.sh'
+      - run: chmod +x tests/tests.sh
+      - run: .tests/tests.sh
