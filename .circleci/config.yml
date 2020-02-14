@@ -10,5 +10,7 @@ jobs:
       - image: quay.io/biocontainers/deepstats:0.4--0
     steps:
       - checkout # check out the code in the project directory
+      - run: git clone https://github.com/gtrichard/deepStats
+      - run: cd deepStats
       - run: chmod +x tests/tests.R
       - run: .tests/tests.R
