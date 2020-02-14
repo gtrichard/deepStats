@@ -1,15 +1,5 @@
 version: 2.1
 
-variables:
-  setup: &setup
-    run:
-      name: Setup bioconda-utils
-      command: .circleci/setup.sh
-   exec: &exec
-    run:
-      name: Execute tests
-      command: .tests/tests.R    
-
 jobs:
   build:
     docker: 
@@ -19,5 +9,5 @@ jobs:
       - run: echo "hello world" # run the `echo` command
   test:
     steps:
-    - setup
-    - exec
+    - run: .circleci/setup.sh
+    - run: .tests/tests.R
