@@ -12,4 +12,4 @@ jobs:
       - checkout # check out the code in the project directory
       - run: find . -type f -name '*.sh'
       - run: chmod +x tests/tests.sh
-      - run: .tests/tests.sh
+      - run: sh tests/tests.sh
