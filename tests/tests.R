@@ -1,6 +1,6 @@
 #!/usr/bin/env Rscript
 library("tools")
-setwd(dir = "deepStats/tests")
+setwd(dir = "tests")
 
 system("../bin/dsComputeBEDDensity --input input/genome_genes.bed --chromSize input/genome_genes_chrom.sizes --windowSize 1000 -o output/tmp_dsComputeBEDDensity")
 if ( md5sum("output/tmp_dsComputeBEDDensity.bedGraph") != md5sum("output/res_dsComputeBEDDensity.bedGraph") ){
