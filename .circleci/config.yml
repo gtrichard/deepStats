@@ -10,4 +10,5 @@ workflows:
   welcome:
     # Run the welcome/run job in its own container
     jobs:
-      - ./tests/tests.R
+      - bash .circleci/setup_conda.sh
+      - bash tests/tests.R
