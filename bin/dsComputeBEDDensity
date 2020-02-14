@@ -1,0 +1,147 @@
+#!/usr/bin/env Rscript
+# BED TO BEDGRAPH GIVEN A WINDOW SIZE
+suppressMessages( library( 'argparse' ) )
+suppressMessages( library( 'vroom' ) )
+suppressMessages( library( 'IRanges' ) )
+
+options(scipen=999)
+
+#### ARGUMENTS ####
+
+parser <- ArgumentParser(description="From .BED files and a chromosome sizes file, compute the BED features density along the genome in bedGraph format using a given window size.",
+                         usage = "dsComputeBEDDensity --input file1.bed file2.bed --chromSize chrom.sizes --windowSize 10000 --output file1 file2")
+
+parser$add_argument("--input","-i", type="character",action="store", nargs='+', dest="input", metavar="character",
+                    help="BED files from which features density will be calculated." )
+
+parser$add_argument("--chromSize","-c", type="character", action="store",
+                    help="A 2 columns tab-delimited file containing chromosome sizes, with one chromosome per line.", metavar="character")
+
+parser$add_argument("--windowSize", "-w",  type="integer", action="store", metavar="number",default=1000,
+                    help="Size of the window used to binify the genome and calculate bed files density. Default: 1000." )
+
+parser$add_argument("--output","-o", type="character",action="store", nargs='+', dest="output", metavar="character",
+                    help="bedGraph file(s) output prefix name(s) ('.bedGraph' is automatically added at the end of the given prefix, one bedGraph per input file)." )
+
+args <- parser$parse_args()
+
+#### SANITY CHECK ####
+
+if ( is.null( args$input ) ) {
+  parser$print_help()
+  stop( "An input file must be supplied.", call.=FALSE )
+}
+
+if ( is.null( args$output ) ) {
+  parser$print_help()
+  stop( "An output prefix must be supplied.", call.=FALSE )
+}
+
+if ( is.null( args$chromSize ) ) {
+  parser$print_help()
+  stop( "A file containing the size of chromosomes must be supplied.", call.=FALSE )
+}
+
+#### SET WD AND GET ABS PATHS ####
+
+args$input <- normalizePath( args$input )
+args$output <- paste( normalizePath( dirname( args$output ) ),"/",basename( args$output ),sep="" )
+args$chromSize <- normalizePath( args$chromSize )
+setwd( normalizePath( dirname( args$output ) ) )
+
+#### LOAD DATA ####
+
+beds <- list()
+for (file in 1:length(args$input)){
+  cat( as.character( Sys.time() ),"Loading input file ",args$input[file],"\n")
+  beds[[file]]<- vroom(args$input[[file]], col_names = F)[,1:3]
+  cat("\n")
+}
+
+cat( as.character( Sys.time() ),"Loading chromosome sizes from ",args$chromSize,"\n")
+chromSize <- as.data.frame(vroom(args$chromSize, col_names = F))
+cat("\n")
+
+#### RETAIN USEFUL CHR ####
+
+chrs <- list()
+retain_chr <- function(df){
+  out <- as.data.frame(unique(df[,1]))
+  return(out)
+}
+chrs <- lapply(beds,retain_chr)
+
+#### BINIFY THE GENOME FOR USEFUL CHROMS ####
+
+cat( as.character( Sys.time() ), "Binifying the genome to given window size",args$windowSize,"\n")
+
+seqlast <- function (from, to, by)
+{
+  vec <- do.call(what = seq, args = list(from, to, by))
+  if ( tail(vec, 1) != to ) {
+    return(c(vec, to))
+  } else {
+    return(vec)
+  }
+}
+
+bedGraph <- list()
+count=0
+for (bedfile in 1:length(beds)){
+  bedGraph[[bedfile]] <- data.frame()
+  count=count+1
+  for (chrom in 1:nrow(chrs[[count]])){
+    chromosome <- chrs[[count]][chrom,1]
+    size <- chromSize[which(chromSize[,1] == chromosome),2]
+    if (size <= args$windowSize){
+      binsStart <- 0
+      binsEnd   <- size
+    } else {
+      binsStart <- seqlast(from = 0, to = size - args$windowSize, by = args$windowSize)
+      binsEnd   <- seqlast(from = args$windowSize, to = size, by = args$windowSize)
+    }
+      tmp_length <- length(binsStart)
+      tmp <- data.frame(chrom=character(),start=integer(),end=integer(),stringsAsFactors=FALSE)
+      tmp[1:tmp_length,1:3] <- 0
+      tmp[,1] <- chromosome
+      tmp[,2] <- binsStart
+      tmp[,3] <- binsEnd
+      bedGraph[[bedfile]] <- rbind(tmp,bedGraph[[bedfile]])
+  }
+}
+
+#### ORDER BEDGRAPHS ####
+
+for (bedfile in 1:length(beds)){
+  bedGraph[[bedfile]] <- bedGraph[[bedfile]][
+    order(
+      bedGraph[[bedfile]][,1],
+      bedGraph[[bedfile]][,2],
+      bedGraph[[bedfile]][,3]
+    )
+  ,]
+}
+
+#### CALCULATE FEATURES DENSITY AND APPEND TO BEDGRAPHS ####
+
+cat( as.character( Sys.time() ),"Features density computation... ")
+
+featuresRanges <- list()
+genomeRanges   <- list()
+overlaps       <- list()
+for (i in 1:length(beds)){
+  featuresRanges[[i]] <- split(IRanges(beds[[i]]$X2, beds[[i]]$X3), beds[[i]]$X1)
+  genomeRanges[[i]]   <- split(IRanges(bedGraph[[i]]$start, bedGraph[[i]]$end), bedGraph[[i]]$chrom)
+  overlaps[[i]] <- as.data.frame(unlist(countOverlaps(genomeRanges[[i]],featuresRanges[[i]])))[,1]
+  bedGraph[[i]]["counts"] <- overlaps[[i]]
+}
+
+cat("Done!\n")
+
+#### EXPORT BEDGRAPHS ####
+
+for (i in 1:length(bedGraph)){
+  outname <- paste0(args$output[i],".bedGraph")
+  cat( as.character( Sys.time() ), "Exporting results to ",outname,"\n")
+  write.table(bedGraph[[i]],file = outname,quote = F,col.names = F,row.names = F,sep = "\t")
+}
