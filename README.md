@@ -5,7 +5,7 @@ https://anaconda.org/bioconda/deepstats/badges/license.svg)
 
 ## Description
 
-**deepStats 0.3.1 is a statistical and dataviz toolbox for deeptools, genomic signals, and more (GOterms, etc).**
+**deepStats is a statistical and dataviz toolbox for deeptools, genomic signals, and more (GOterms, etc).**
 
 It aims at providing statistical analyses and streamlining the production of high quality, color-blind friendly, and fully customisable plots (up to the fonts!) for your classic genomic datasets (.bed, .bigwig, gene lists). The goal of deepStats is thus to significantly decrease the amount of time spent in Inkscape/Illustrator to get publication ready plots, and decreasing the research time allotted to finding proper statistical analyses for your genomic signals and datasets. It also aims at giving tools to complement deepTools functions.
 
