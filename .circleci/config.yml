@@ -1,5 +1,9 @@
 version: 2.1
 
+variables:
+  linux: &linux
+    machine: true
+
 jobs:
   build:
     docker: 
@@ -7,7 +11,10 @@ jobs:
     steps:
       - checkout # check out the code in the project directory
       - run: echo "hello world" # run the `echo` command
+  # build and test on linux
   test-linux:
+    <<: *linux
     steps:
-    - run: .circleci/setup.sh
-    - run: .tests/tests.R
+      - checkout
+      - run: .circleci/setup.sh
+      - run: .tests/tests.R
