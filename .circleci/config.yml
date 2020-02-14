@@ -10,4 +10,5 @@ jobs:
       - image: quay.io/biocontainers/deepstats:0.4--0
     steps:
       - checkout # check out the code in the project directory
-      - run: bash tests/tests.R
+      - run: chmod +x tests/tests.R
+      - run: .tests/tests.R
