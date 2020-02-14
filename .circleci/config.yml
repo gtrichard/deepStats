@@ -7,7 +7,7 @@ variables:
 jobs:
   build:
     docker: 
-      - image: circleci/node:4.8.2 # the primary container, where your job's commands are run
+      - image: quay.io/biocontainers/deepstats:0.4
     steps:
       - checkout # check out the code in the project directory
       - run: echo "hello world" # run the `echo` command
@@ -16,5 +16,4 @@ jobs:
     <<: *linux
     steps:
       - checkout
-      - run: .circleci/setup.sh
       - run: .tests/tests.R
