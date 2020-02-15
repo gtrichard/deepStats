@@ -1,0 +1,22 @@
+version: 2.1
+
+jobs:
+  build:
+    docker: 
+      - image: quay.io/widen/ubuntu:18.04-ubuntu1804-20200213
+    steps:
+      - checkout # check out the code in the project directory
+      - run: chmod +x .circleci/setup_conda.sh
+      - run: apt-get update
+      - run: apt-get install -y zlib1g curl
+      - run: ./.circleci/setup_conda.sh
+      - run:
+          name: Make Composer executables available globally
+          command: |
+            echo 'export PATH=/root/miniconda/bin/:$PATH' >> $BASH_ENV
+            source $BASH_ENV
+      - run: chmod +x tests/tests.R
+      - run: dsComputeBEDDensity --input tests/input/genome_genes.bed --chromSize tests/input/genome_genes_chrom.sizes --windowSize 1000 -o tests/output/tmp_dsComputeBEDDensity
+      - run: dsComputeGCCoverage --input tests/input/genome.fa --windowSize 1000 -o tests/output/tmp_dsComputeGCCoverage
+      - run: dsCompareCurves -i tests/input/deeptools_matrix.txt -o tests/output/tmp_dsCompareCurves -b 50
+      - run: Rscript tests/tests.R

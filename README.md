@@ -1,5 +1,6 @@
-[![install with bioconda](https://img.shields.io/badge/install%20with-bioconda-brightgreen.svg?style=flat)](http://bioconda.github.io/recipes/deepstats/README.html) ![](https://img.shields.io/badge/lifecycle-experimental-orange.svg) [![DOI](https://zenodo.org/badge/189997890.svg)](https://zenodo.org/badge/latestdoi/189997890) ![Version](https://anaconda.org/bioconda/deepstats/badges/version.svg) ![GPL3](
-https://anaconda.org/bioconda/deepstats/badges/license.svg)
+[![CircleCI](https://circleci.com/gh/gtrichard/deepStats/tree/circleci-project-setup.svg?style=shield)](https://circleci.com/gh/gtrichard/deepStats/tree/circleci-project-setup) [![Conda version](https://img.shields.io/badge/bioconda-0.4-success.svg)](https://anaconda.org/bioconda/deepstats) [![Downloads](https://img.shields.io/conda/dn/bioconda/deepstats.svg?style=flat)](https://anaconda.org/bioconda/deepstats) ![](https://img.shields.io/badge/lifecycle-experimental-orange.svg) [![DOI](https://zenodo.org/badge/189997890.svg)](https://zenodo.org/badge/latestdoi/189997890) [![GPL](https://img.shields.io/github/license/gtrichard/deepStats?color=lightgrey)](https://github.com/gtrichard/deepStats/blob/circleci-project-setup/LICENSE.txt)
+ 
+ 
 
 <img src="https://github.com/gtrichard/deepStats/blob/master/docs/images/deepStats_logo.png?raw=true" width="720px" class="center">
 
