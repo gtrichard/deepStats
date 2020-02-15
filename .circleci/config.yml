@@ -6,7 +6,7 @@ jobs:
       - image: quay.io/widen/ubuntu:18.04-ubuntu1804-20200213
     steps:
       - checkout # check out the code in the project directory
-      - run: sudo ln -snf /bin/env /usr/bin/env
+      - run: ln -snf /bin/env /usr/bin/env
       - run: chmod +x .circleci/setup_conda.sh
       - run: apt-get update
       - run: apt-get install -y zlib1g curl
