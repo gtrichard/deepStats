@@ -7,7 +7,7 @@ jobs:
     steps:
       - checkout # check out the code in the project directory
       - run: chmod +x .circleci/setup_conda.sh
-      - run: apt-get install curl zlib1g
+      - run: apt-get install zlib1g
       - run: ./.circleci/setup_conda.sh
       - run: chmod +x tests/tests.R
       - run: ./tests/tests.R
