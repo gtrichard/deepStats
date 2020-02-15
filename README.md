@@ -37,7 +37,7 @@ If you use deepStats in your work, please cite this repository using the followi
 
 - **As a command-line tool through Conda**
 
-By using the following command-line, you will be able to use the different tools listed below:
+deepStats is easily deployable as a command-line tool with conda. Use the following command to create a virtual env for deepStats. Don't install deepStats in your base env nor in an environment containing other tools.
 ```
 conda create -c bioconda -c conda-forge -n deepStats python=3.7 deepStats
 conda activate deepStats
