@@ -1,4 +1,4 @@
-#!/usr/bin/env Rscript
+#!/root/miniconda/bin/ Rscript
 library("tools")
 setwd(dir = "tests")
 
