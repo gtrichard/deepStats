@@ -3,7 +3,7 @@ version: 2.1
 jobs:
   build:
     docker: 
-      - image: quay.io/biocontainers/deepstats:0.4--0
+      - image: quay.io/repository/widen/ubuntu:18.04-ubuntu1804-20200213
     steps:
       - checkout # check out the code in the project directory
       - run: chmod +x .circleci/setup_conda.sh
