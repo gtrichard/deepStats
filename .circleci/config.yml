@@ -11,5 +11,4 @@ jobs:
       - run: apt-get install -y zlib1g curl
       - run: ./.circleci/setup_conda.sh
       - run: chmod +x tests/tests.R
-      - run: find /root -type f -name 'Rscript'
-      - run: ./tests/tests.R
+      - run: Rscript tests/tests.R
