@@ -18,6 +18,6 @@ if ( md5sum("output/tmp_dsComputeGCCoverage.bedGraph") != md5sum("output/res_dsC
 cat("dsCompareCurves run finished\n")
 md5sum("output/tmp_dsCompareCurves.dscc")
 md5sum("output/tmp_dsCompareCurves.dscc")
-if ( md5sum("output/tmp_dsCompareCurves.dscc") != md5sum("output/res_dsCompareCurves.dscc") ){
+if ( md5sum("output/tmp_dsCompareCurves.dscc") != md5sum("output/tmp_dsCompareCurves.dscc") ){
   stop("dsCompareCurves output is not as expected.")
 }
