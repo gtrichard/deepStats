@@ -20,7 +20,7 @@ if ( md5sum("output/tmp_dsComputeGCCoverage.bedGraph") != md5sum("output/res_dsC
 system("../bin/dsCompareCurves -i input/deeptools_matrix.txt -o output/tmp_dsCompareCurves -b 50")
 cat("dsCompareCurves run finished\n")
 md5sum("output/tmp_dsCompareCurves.dscc")
-md5sum("output/res_dsCompareCurves.dscc")
+md5sum("output/tmp_dsCompareCurves.dscc")
 if ( md5sum("output/tmp_dsCompareCurves.dscc") != md5sum("output/res_dsCompareCurves.dscc") ){
   stop("dsCompareCurves output is not as expected.")
 }
