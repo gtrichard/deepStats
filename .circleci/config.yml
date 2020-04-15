@@ -8,7 +8,7 @@ jobs:
       - checkout # check out the code in the project directory
       - run: chmod +x .circleci/setup_conda.sh
       - run: apt-get update
-      - run: apt-get install -y zlib1g curl
+      - run: apt-get install -y zlib1g wget
       - run: ./.circleci/setup_conda.sh
       - run:
           name: Make Composer executables available globally
