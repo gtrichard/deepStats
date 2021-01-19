@@ -620,7 +620,7 @@ rm(boot_plot_data)
 
 make_boot_plot<-function(x,type){
 
-  if(opt$bootPlotShareY==FALSE){
+  if ( opt$bootPlotShareY == FALSE ){
     ratio <- with(x, diff(range(x$Bin))/diff(c(min(x$Min), max(x$Max)))*as.numeric(opt$bootPlotRatio))
 
   }else{
@@ -628,18 +628,18 @@ make_boot_plot<-function(x,type){
                     diff(c(min(bootstraps_to_plot$Min), max(bootstraps_to_plot$Max) )))
   }
 
-  ggplot(x,aes( x=x$Bin, color=x[,type], fill=x[,type] ))+
-    geom_ribbon( aes( ymin = x$Min, ymax = x$Max ),alpha=0.5,linetype=0 )+
-    geom_line( aes( y=x$Mean ) )+
+  ggplot(x,aes( x = Bin, color = x[,type], fill = x[,type] ))+
+    geom_ribbon( aes( ymin = Min, ymax = Max ),alpha = 0.5, linetype = 0 )+
+    geom_line( aes( y = Mean ) )+
     scale_color_manual( legend_title, values = color_palette )+
     scale_fill_manual( legend_title, values = fill_palette )+
-    scale_x_continuous( NULL , breaks=xaxis$breaks, labels=xaxis$names )+
-    {if(opt$bootPlotShareY==FALSE) scale_y_continuous(labels= function(x) sprintf("%.2f", x)) }+
-    {if(opt$bootPlotShareY==TRUE) scale_y_continuous(labels= function(x) sprintf("%.2f", x),
-                                                     limits = c(min(bootstraps_to_plot$Min),max(bootstraps_to_plot$Max)))}+
+    scale_x_continuous( NULL , breaks = xaxis$breaks, labels = xaxis$names )+
+    {if( opt$bootPlotShareY == FALSE ) scale_y_continuous(labels = function(x) sprintf("%.2f", x)) }+
+    {if( opt$bootPlotShareY == TRUE ) scale_y_continuous(labels = function(x) sprintf("%.2f", x),
+                                                     limits = c( min ( bootstraps_to_plot$Min ) ,max ( bootstraps_to_plot$Max )))}+
     ylab( opt$signalName )+
-    panel_border( size=1, remove=FALSE )+
-    coord_fixed(ratio=ratio)+
+    panel_border ( size = 1, remove = FALSE )+
+    coord_fixed ( ratio = ratio )+
     theme( axis.text.y = element_text( size = 12, color = "#383838" ),
            axis.text.x = element_text( size = 12,  color = "#383838" ),
            axis.title.y = element_text( size = 13 ),
@@ -647,7 +647,7 @@ make_boot_plot<-function(x,type){
            plot.title = element_text( size = 13, face = "plain", hjust = 0.5, vjust=0.5),
            legend.title = element_text( size = 12, color = "#383838" ),
            legend.text = element_text( size = 12, color = "black" ),
-           line = element_line( size=1 ),
+           line = element_line( size = 1 ),
            strip.placement = "outside",
            strip.background = element_blank(),
            plot.background = element_blank(),
@@ -717,12 +717,14 @@ pdf( file = paste( opt$output,"_wilcoxon.pdf",sep="" ),width = opt$wilcoxPlotWid
 
 make_wilcox_plot<-function(x){
 
+  full[ which( full$vals == Inf ), 'vals' ] <- max( full[ which( !is.infinite( full$vals ) ), 1 ] )
+
   rec_start<-as.numeric( xaxis$xaxis_start[[1]] )
   rec_end<-as.numeric( xaxis$xaxis_end[[1]] )
 
   ratio <- with(x, diff(range(full$xaxis))/diff(c(min(full$vals),max(full$vals, -log10( opt$wilcoxThreshold )))))
 
-  ggplot( x,aes( x=x$xaxis,y=x$vals ) )+
+  ggplot( x,aes( x = xaxis,y = vals ) )+
     geom_rect( aes( xmin = rec_start, xmax = rec_end, ymin = -0.1, ymax =-log10( opt$wilcoxThreshold ) ), fill = "#CECECE" ) +
     geom_line( color="#ff6100" )+
     facet_grid( Group1 ~ Group2 )+
