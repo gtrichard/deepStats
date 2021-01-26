@@ -37,9 +37,11 @@ If you use deepStats in your work, please cite this repository using the followi
 
 - **As a command-line tool through Conda**
 
-deepStats is easily deployable as a command-line tool with conda. Use the following command to create a virtual env for deepStats. Don't install deepStats in your base env nor in an environment containing other tools.
+deepStats is easily deployable as a command-line tool with conda. Use the following command to create a virtual env for deepStats. Don't install deepStats in your base env nor in an environment containing other tools. The installation can be quite long using the regular `conda create` command, this is thus recommended to use `mamba create` instead.
 ```
-conda create -c bioconda -c conda-forge -n deepStats python=3.7 deepStats
+conda create -n mamba -c conda-forge mamba
+conda activate mamba
+mamba create -n deepStats -c bioconda -c conda-forge  deepstats
 conda activate deepStats
 ```
 
