@@ -5,4 +5,5 @@ export PATH="$HOME/miniconda/bin:$PATH"
 hash -r
 conda config --set always_yes yes --set changeps1 no
 
-conda install --yes --quiet -c conda-forge -c bioconda deepstats
+conda install --yes --quiet -c conda-forge mamba
+mamba install --yes --quiet -c conda-forge -c bioconda deepstats
