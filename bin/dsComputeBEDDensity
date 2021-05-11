@@ -92,6 +92,12 @@ for (bedfile in 1:length(beds)){
   count=count+1
   for (chrom in 1:nrow(chrs[[count]])){
     chromosome <- chrs[[count]][chrom,1]
+    
+    a = try(size <- chromSize[which(chromSize[,1] == chromosome),2], TRUE)
+    if (length(a) == 0 ){
+      stop("A chromosome is in the bed file which is not in the chromosome sizes file")
+    }
+
     size <- chromSize[which(chromSize[,1] == chromosome),2]
     if (size <= args$windowSize){
       binsStart <- 0
